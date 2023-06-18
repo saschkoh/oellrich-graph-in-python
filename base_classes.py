@@ -12,7 +12,6 @@ class Node:
         self.weight = weight
 
     @property
-    @property
     def name(self) -> str:
         """ returns the name of the node """
         return self.__name
