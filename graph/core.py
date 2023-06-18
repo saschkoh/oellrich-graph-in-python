@@ -180,11 +180,7 @@ class Graph:
             self.__nodes.append(new_node)
             i_node = len(self.__nodes) - 1
             self.__forward_neighbours.append([])
-<<<<<<< HEAD:graph/core.py
             if self.isdirected is True:
-=======
-            if self.__directed is True:
->>>>>>> ec76503f7b2ea14582d074bda80f67a91199518c:graph.py
                 self.__backward_neighbours.append([])
         # count new node and return index
         self.__number_of_nodes += 1
