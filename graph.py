@@ -14,11 +14,16 @@ class Graph:
         self.__forward_neighbours = []
         self.__backward_neighbours = []
 
-        if filename:
-            self._load(filename)
+        if filename is not None:
+            if not isinstance(filename, str):
+                raise TypeError("Graph: __init__(filename)", filename)
+            self.load_from_file(filename)
 
-    def _load(self, filename: str):
+    def load_from_file(self, filename: str):
         """ reads the graph from a file """
+#        with open(f"./graphs/{filename}", "r") as file:
+#            lines = [line.split("#")[0].strip() for line in file.readlines()]
+#            print(lines)
         pass
 
     @property
