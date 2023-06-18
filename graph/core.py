@@ -26,6 +26,7 @@ class Graph:
                 raise FileNotFoundError("Graph: __init__(filename)", filename)
             self.load_from_file(filename)
 
+<<<<<<< HEAD:graph/core.py
     def load_from_file(self, filename: str):
         """ Reads the graph from a file """
         # open file, read lines and remove comments and empty lines
@@ -39,6 +40,24 @@ class Graph:
         number_of_nodes = int(lines[0])
         number_of_edges = int(lines[1])
         if lines[2] in ["ungerichtet", "undirected", "u", "U"]:
+=======
+        if filename is not None:
+            if not isinstance(filename, str):
+                raise TypeError("Graph: __init__(filename)", filename)
+            self.load_from_file(filename)
+
+    def load_from_file(self, filename: str):
+        """ reads the graph from a file """
+        with open(f"./test-graphs/{filename}", "r") as file:
+            lines = [line.split("#")[0].strip() for line in file.readlines()]
+            lines = [line for line in lines if line != ""]
+# print debug information
+            print(lines)
+        # retrieve number of nodes and edges and directedness
+        number_of_nodes = int(lines[0])
+        number_of_edges = int(lines[1])
+        if lines[2] == "ungerichtet":
+>>>>>>> ec76503f7b2ea14582d074bda80f67a91199518c:graph.py
             self.__directed = False
         # retrieve node names and coordinates
         for i in range(3, 3 + number_of_nodes):
@@ -49,7 +68,6 @@ class Graph:
             edge_data = lines[i].split()
             self.add_edge(Edge(edge_data[0], self.node_index(edge_data[1]), self.node_index(edge_data[2])))
 
-    @property
     def isdirected(self) -> bool:
         """ Returns whether the graph is directed or not """
         return self.__directed
@@ -162,7 +180,11 @@ class Graph:
             self.__nodes.append(new_node)
             i_node = len(self.__nodes) - 1
             self.__forward_neighbours.append([])
+<<<<<<< HEAD:graph/core.py
             if self.isdirected is True:
+=======
+            if self.__directed is True:
+>>>>>>> ec76503f7b2ea14582d074bda80f67a91199518c:graph.py
                 self.__backward_neighbours.append([])
         # count new node and return index
         self.__number_of_nodes += 1

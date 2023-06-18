@@ -28,7 +28,7 @@ class Node:
         out_string = self.__name
         if self.weight != UNUSED:
             out_string += f" [{self.weight}]"
-        print(out_string)
+        # print(out_string)
         return out_string
 
 
@@ -63,10 +63,10 @@ class Edge:
     @property
     def __str__(self) -> str:
         """ prints and returns relevant information about the edge """
-        out_string = f"{self.__name} ({self.__i_tail}, {self.__i_head})"
+        out_string = f"{self.__name} ({self.__i_head}, {self.__i_tail})"
         if self.weight != UNUSED:
             out_string += f" [{self.weight}]"
-        print(out_string)
+        # print(out_string)
         return out_string
 
 
