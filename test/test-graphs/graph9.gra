@@ -1,0 +1,27 @@
+9   # Knoten
+9   # Kanten
+ungerichtet
+
+# Knotenname xKoord yKoord
+
+A 0 0
+B 1 0
+C 2 0
+D 0 1
+E 1 1
+F 2 1
+G 0 2
+H 1 2
+I 2 2
+
+# Kantenname Knotenname1 Knotenname2
+
+AB A B
+BC B C
+AD A D
+AE A E
+BE B E
+DG D G
+EG E G
+FI F I
+HI H I

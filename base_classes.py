@@ -1,4 +1,4 @@
-""" base classes for the graph data structure """
+""" Base classes for the graph data structure """
 
 from constants import NO_INDEX, UNUSED
 
@@ -12,6 +12,7 @@ class Node:
         self.weight = weight
 
     @property
+    @property
     def name(self) -> str:
         """ returns the name of the node """
         return self.__name
@@ -22,7 +23,7 @@ class Node:
         return bool(self.__name and self.__name.strip())
 
     @property
-    def info(self) -> str:
+    def __str__(self) -> str:
         """ prints and returns relevant information about the node """
         """ the x and y coordinates are not relevant for the graph structure """
         out_string = self.__name
@@ -61,7 +62,7 @@ class Edge:
         return bool(self.__name and self.__name.strip())
 
     @property
-    def info(self) -> str:
+    def __str__(self) -> str:
         """ prints and returns relevant information about the edge """
         out_string = f"{self.__name} ({self.__i_tail}, {self.__i_head})"
         if self.weight != UNUSED:
@@ -84,4 +85,7 @@ class Neighbour:
     @property
     def j(self) -> int:
         """ returns the index of the edge """
-        return self.__j_edge
+    
+    @property
+    def __str__(self) -> str:
+        pass
