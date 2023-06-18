@@ -24,7 +24,7 @@ class Graph:
         with open(f"./test-graphs/{filename}", "r") as file:
             lines = [line.split("#")[0].strip() for line in file.readlines()]
             lines = [line for line in lines if line != ""]
-            # print debug information
+# print debug information
             print(lines)
         # retrieve number of nodes and edges and directedness
         number_of_nodes = int(lines[0])
