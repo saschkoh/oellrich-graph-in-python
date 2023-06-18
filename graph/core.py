@@ -3,6 +3,49 @@ from constants import NO_INDEX
 from base_classes import Node, Edge, Neighbour
 from pathlib import Path
 
+class File:
+    """
+    Class for loading and reading the file containing the graph data
+    """
+    path: str
+    def __init__(self, path: str):
+        self.__path = Path(path)
+        if not self.__path.is_file():
+            raise FileNotFoundError("File: __init__()", self.__path)
+        
+    def read(self):
+        # open file, read lines and remove comments and empty lines
+        with open(f"{self.path}", "r") as file:
+            lines = []
+            for line in file.readlines():
+                line = line.split("#")[0].strip()
+                if line != "":
+                    lines.append(line)
+        # retrieve number of nodes and edges and directedness
+        self.node_count = int(lines.pop(0))
+        self.edge_count = int(lines.pop(0))
+        self.directed_raw = lines.pop(0)
+        self.node_names_raw = lines[:self.node_count]
+        self.edge_names_raw = lines[self.node_count:self.node_count + self.edge_count]
+        
+    @property
+    def directed(self):
+        if self.directed_raw in ["ungerichtet", "undirected", "u", "U"]:
+            return False
+        elif self.directed_raw in ["gerichtet", "directed", "g", "G"]:
+            return True
+        else:
+            raise ValueError(f"Directedness not specified correctly in file {self.path}")
+        
+    @property
+    def nodes(self):
+        return [Node(name) for name in self.node_names_raw]
+    
+    @property
+    def edges(self):
+        return [Edge(name) for name in self.edge_names_raw]
+        
+
 class Graph:
     """
     Class for a graph data structure
