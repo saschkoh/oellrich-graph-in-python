@@ -14,14 +14,32 @@ class Graph:
         self.__forward_neighbours = []
         self.__backward_neighbours = []
 
-        if filename:
-            self._load(filename)
+        if filename is not None:
+            if not isinstance(filename, str):
+                raise TypeError("Graph: __init__(filename)", filename)
+            self.load_from_file(filename)
 
-    def _load(self, filename: str):
+    def load_from_file(self, filename: str):
         """ reads the graph from a file """
-        pass
+        with open(f"./test-graphs/{filename}", "r") as file:
+            lines = [line.split("#")[0].strip() for line in file.readlines()]
+            lines = [line for line in lines if line != ""]
+# print debug information
+            print(lines)
+        # retrieve number of nodes and edges and directedness
+        number_of_nodes = int(lines[0])
+        number_of_edges = int(lines[1])
+        if lines[2] == "ungerichtet":
+            self.__directed = False
+        # retrieve node names and coordinates
+        for i in range(3, 3 + number_of_nodes):
+            node_data = lines[i].split()
+            self.add_node(Node(node_data[0], x_coord=float(node_data[1]), y_coord=float(node_data[2])))
+        # retrieve edge data
+        for i in range(3 + number_of_nodes, 3 + number_of_nodes + number_of_edges):
+            edge_data = lines[i].split()
+            self.add_edge(Edge(edge_data[0], self.node_index(edge_data[1]), self.node_index(edge_data[2])))
 
-    @property
     def isdirected(self) -> bool:
         """ returns whether the graph is directed or not """
         return self.__directed
@@ -134,7 +152,7 @@ class Graph:
             self.__nodes.append(new_node)
             i_node = len(self.__nodes) - 1
             self.__forward_neighbours.append([])
-            if self._directed is True:
+            if self.__directed is True:
                 self.__backward_neighbours.append([])
         # count new node and return index
         self.__number_of_nodes += 1
