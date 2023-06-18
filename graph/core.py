@@ -1,7 +1,74 @@
 from typing import List
 from constants import NO_INDEX
-from base_classes import Node, Edge, Neighbour
+from base_classes import Edge, Neighbour
 from pathlib import Path
+
+
+class Node:
+    """
+    Class for representing a node and its optional coordinates and weight. The
+    class can be constructed with or without parameters. If no parameters are
+    given, the load_from_string method can be used as an alternative constructor.
+    """
+    name: str
+    x_coord: float
+    y_coord: float
+    weight: float
+    def __init__(
+            self,
+            name: str = None,
+            x_coord: float = None,
+            y_coord: float = None,
+            weight: float = None
+        ):
+        self.__name = name
+        self.x_coord = x_coord
+        self.y_coord = y_coord
+        self.weight = weight
+        
+    def load_from_string(self, string: str)  -> None:
+        """
+        This method can be used as an alternative constructor. It takes a string
+        of the format "name x_coord y_coord weight" and sets the corresponding
+        parameters of the node object. If any of the parameters are already set,
+        the method will raise an exception.
+        """
+        # check if any of the parameters are already set
+        for param in [self.__name, self.x_coord, self.y_coord, self.weight]:
+            if param is not None:
+                raise ValueError(
+                    f"Node: load_from_string()", "parameter {param} is already set!"
+                )
+        # split the string into its components
+        components = string.split(" ")
+        # check if the string has the correct format
+        if len(components) != 3:
+            raise ValueError(
+                f"Node: load_from_string()", "string {string} has incorrect format!"
+            )
+        self.__name = components[0]
+        self.x_coord = float(components[1])
+        self.y_coord = float(components[2])
+        
+    @property
+    def name(self) -> str:
+        return self.__name
+
+    @property
+    def allowed(self) -> bool:
+        """ returns whether the node got deleted or not """
+        return self.__name != ""
+
+    @property
+    def __str__(self) -> str:
+        """
+        Prints and returns relevant information about the node. The x and y
+        coordinates are not relevant for the graph structure.
+        """
+        out_string = self.__name
+        if self.weight != None:
+            out_string += f" [{self.weight}]"
+        return out_string
 
 class File:
     """
@@ -25,8 +92,8 @@ class File:
         self.node_count = int(lines.pop(0))
         self.edge_count = int(lines.pop(0))
         self.directed_raw = lines.pop(0)
-        self.node_names_raw = lines[:self.node_count]
-        self.edge_names_raw = lines[self.node_count:self.node_count + self.edge_count]
+        self.nodes_raw = lines[:self.node_count]
+        self.edges_raw = lines[self.node_count:self.node_count + self.edge_count]
         
     @property
     def directed(self):
@@ -39,11 +106,11 @@ class File:
         
     @property
     def nodes(self):
-        return [Node(name) for name in self.node_names_raw]
+        return [Node().load_from_string(node) for node in self.nodes_raw]
     
     @property
     def edges(self):
-        return [Edge(name) for name in self.edge_names_raw]
+        return [Edge(edge) for edge in self.edges_raw]
         
 
 class Graph:

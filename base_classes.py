@@ -3,33 +3,6 @@
 from constants import NO_INDEX, UNUSED
 
 
-class Node:
-    """ class to represent a node and its optional coordinates and weight """
-    def __init__(self, name: str, x_coord: float = UNUSED, y_coord: float = UNUSED, weight: float = UNUSED):
-        self.__name = name
-        self.x_coord = x_coord
-        self.y_coord = y_coord
-        self.weight = weight
-
-    @property
-    def name(self) -> str:
-        """ returns the name of the node """
-        return self.__name
-
-    @property
-    def allowed(self) -> bool:
-        """ returns whether the node got deleted or not """
-        return bool(self.__name and self.__name.strip())
-
-    @property
-    def __str__(self) -> str:
-        """ prints and returns relevant information about the node """
-        """ the x and y coordinates are not relevant for the graph structure """
-        out_string = self.__name
-        if self.weight != UNUSED:
-            out_string += f" [{self.weight}]"
-        # print(out_string)
-        return out_string
 
 
 class Edge:
