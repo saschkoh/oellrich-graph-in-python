@@ -1,4 +1,4 @@
-"""constant values for the graph class"""
+""" constant values for the graph class """
 
 from sys import maxsize
 

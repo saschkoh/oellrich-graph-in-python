@@ -105,7 +105,7 @@ class Graph:
 
     # for undirected graphs only
     def neighbours(self, i: int) -> List[Neighbour]:
-        """ returns the neighbours of the node at the given index for undirected graphs"""
+        """ returns the neighbours of the node at the given index for undirected graphs """
         return self.forward_neighbours(i)
 
     def forward_extent(self, i: int) -> int:
@@ -118,7 +118,7 @@ class Graph:
 
     # for undirected graphs only
     def extent(self, i: int) -> int:
-        """ returns the number of neighbours of the node at the given index for undirected graphs"""
+        """ returns the number of neighbours of the node at the given index for undirected graphs """
         return len(self.forward_extent(i))
 
     def add_node(self, new_node: Node):

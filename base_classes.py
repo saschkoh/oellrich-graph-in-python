@@ -1,10 +1,10 @@
-"""base classes for the graph data structure"""
+""" base classes for the graph data structure """
 
 from constants import NO_INDEX, UNUSED
 
 
 class Node:
-    """class to represent a node and its weight in the graph"""
+    """ class to represent a node and its optional coordinates and weight """
     def __init__(self, name: str, x_coord: float = UNUSED, y_coord: float = UNUSED, weight: float = UNUSED):
         self._name = name
         self.x_coord = x_coord
@@ -29,7 +29,7 @@ class Node:
 
 
 class Edge:
-    """class to represent an edge and the node indices it connects"""
+    """ class to represent an edge and the node indices it connects """
     def __init__(self, name: str, i_head: int, i_tail: int, weight: float = UNUSED):
         self._name = name
         self._i_head = i_head
@@ -62,7 +62,7 @@ class Edge:
 
 
 class Neighbour:
-    """class to store the indices of a neighbour node and connecting edge"""
+    """ class to store the indices of a neighbour node and connecting edge """
     def __init__(self, i_node: int = NO_INDEX, j_edge: int = NO_INDEX):
         self._i_node = i_node
         self._j_edge = j_edge
