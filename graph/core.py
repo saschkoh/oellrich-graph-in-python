@@ -1,7 +1,17 @@
 from typing import List
 from constants import NO_INDEX
-from base_classes import Edge, Neighbour
+from base_classes import Neighbour
 from pathlib import Path
+
+# TODO
+# - change entire structure: GraphReader --> attributes, Nodes, Edges --> Graph
+#   when creating the Node objects, create hash table for the names
+#   hand over Node objects to Edge objects
+# - remove private attributes
+# - fix comments
+# - add type hints
+# - add logging
+# - add tests
 
 
 class Node:
@@ -21,7 +31,7 @@ class Node:
             y_coord: float = None,
             weight: float = None
         ):
-        self.__name = name
+        self.name = name
         self.x_coord = x_coord
         self.y_coord = y_coord
         self.weight = weight
@@ -49,10 +59,6 @@ class Node:
         self.__name = components[0]
         self.x_coord = float(components[1])
         self.y_coord = float(components[2])
-        
-    @property
-    def name(self) -> str:
-        return self.__name
 
     @property
     def allowed(self) -> bool:
@@ -66,6 +72,69 @@ class Node:
         coordinates are not relevant for the graph structure.
         """
         out_string = self.__name
+        if self.weight != None:
+            out_string += f" [{self.weight}]"
+        return out_string
+
+class Edge:
+    """
+    Class for representing an edge and the node indices it connects to. The
+    class can be constructed with or without parameters. If no parameters are
+    specified, the load_from_string method can be used as an alternative
+    constructor.
+    """
+    name: str
+    i_head: int
+    i_tail: int
+    weight: float
+    def __init__(
+            self,
+            name: str = None,
+            i_head: int = None,
+            i_tail: int = None,
+            weight: float = None
+        ):
+        self.name = name
+        self.i_head = i_head
+        self.i_tail = i_tail
+        self.weight = weight
+        
+    def load_from_string(self, string: str, nodes: dict[int, Node]) -> None:
+        """
+        This method can be used as an alternative constructor. It takes a string
+        of the format "name head_name tail_name" and sets the corresponding
+        parameters of the edge object. If any of the parameters are already set,
+        the method will raise an exception.
+        """
+        # check if any of the parameters are already set
+        for param in [self.__name, self.__i_head, self.__i_tail, self.weight]:
+            if param is not None:
+                raise ValueError(
+                    f"Edge: load_from_string()", "parameter {param} is already set!"
+                )
+        # split the string into its components
+        components = string.split(" ")
+        # check if the string has the correct format
+        if len(components) != 3:
+            raise ValueError(
+                f"Edge: load_from_string()", "string {string} has incorrect format!"
+            )
+        # set the parameters
+        self.name = components[0]
+        # in order to get the index of a node, we need to look it up in the
+        # nodes list. This is done by the graph class.
+        self.i_head = nodes.nodes[int(components[1])]
+        self.i_tail = nodes.nodes[int(components[2])]
+
+    @property
+    def allowed(self) -> bool:
+        """ returns whether the edge got deleted or not """
+        return bool(self.name and self.name.strip())
+
+    @property
+    def __str__(self) -> str:
+        """ prints and returns relevant information about the edge """
+        out_string = f"{self.name} ({self.i_head}, {self.i_tail})"
         if self.weight != None:
             out_string += f" [{self.weight}]"
         return out_string
@@ -105,12 +174,23 @@ class File:
             raise ValueError(f"Directedness not specified correctly in file {self.path}")
         
     @property
+    def nodes_dict(self):
+        nodes_dict = {}
+        for i, node in enumerate(self.nodes_raw):
+            nodes_dict[i] = Node().load_from_string(node)
+        return nodes_dict
+    
+    @property
     def nodes(self):
-        return [Node().load_from_string(node) for node in self.nodes_raw]
+        return list(self.nodes_dict.values())
     
     @property
     def edges(self):
-        return [Edge(edge) for edge in self.edges_raw]
+        edges = []
+        for edge in self.edges_raw:
+            edges.append(Edge().load_from_string(edge, self.nodes_dict))
+        return edges
+            
         
 
 class Graph:
