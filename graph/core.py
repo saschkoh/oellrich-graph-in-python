@@ -99,7 +99,7 @@ class Edge:
         the method will raise an exception.
         """
         # check if any of the parameters are already set
-        for param in [self.name, self.__i_head, self.__i_tail, self.weight]:
+        for param in [self.name, self.i_head, self.i_tail, self.weight]:
             if param is not None:
                 raise ValueError(
                     f"Edge: load_from_string() parameter {param} is already set!"
@@ -228,10 +228,6 @@ class Graph:
             edge_data = lines[i].split()
             self.add_edge(Edge(edge_data[0], self.node_index(edge_data[1]), self.node_index(edge_data[2])))
 
-    def isdirected(self) -> bool:
-        """ Returns whether the graph is directed or not """
-        return self.directed
-
     # get-methods with parameters
     def node_allowed(self, i: int) -> bool:
         """ returns whether the node is allowed or not """
@@ -271,7 +267,7 @@ class Graph:
                 return j
         return NO_INDEX
 
-    def get_get_forward_neighbours(self, i: int) -> List[Neighbour]:
+    def get_forward_neighbours(self, i: int) -> List[Neighbour]:
         """ returns the forward neighbours of the node at the given index """
         if i >= self.node_count:
             raise IndexError("Graph: get_forward_neighbours(i)", i, self.edge_count)
@@ -285,7 +281,7 @@ class Graph:
             raise IndexError("Graph: get_backward_neighbours(i)", i, self.node_count)
         if not self.node_allowed(i):
             raise ValueError("Graph: get_backward_neighbours(i), Node ", i)
-        if not self._directed():
+        if not self.directed:
             return self.forward_neighbours[i]
         return self.backward_neighbours[i]
 
@@ -320,7 +316,7 @@ class Graph:
             self.nodes.append(new_node)
             i_node = len(self.nodes) - 1
             self.forward_neighbours.append([])
-            if self.isdirected is True:
+            if self.directed is True:
                 self.backward_neighbours.append([])
         # count new node and return index
         self.node_count += 1
@@ -358,7 +354,7 @@ class Graph:
         for neighbour in neighbours:
             self.delete_edge(neighbour.j)
         # for directed graphs also delete all edges pointing towards the node
-        if self.isdirected is True:
+        if self.directed is True:
             neighbours = self.backward_neighbours[i].copy()
             for neighbour in neighbours:
                 self.delete_edge(neighbour.j)
@@ -381,7 +377,7 @@ class Graph:
                 forward_neighbours.pop()
                 break
         # delete edges[j] from backward_neighbours
-        if self.isdirected is True:
+        if self.directed is True:
             backward_neighbours = self.backward_neighbours[self.edges[j].i_head]
             for neighbour in backward_neighbours:
                 if neighbour.j() == j:
