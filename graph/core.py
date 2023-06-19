@@ -7,7 +7,6 @@ from pathlib import Path
 # - change entire structure: GraphReader --> attributes, Nodes, Edges --> Graph
 #   when creating the Node objects, create hash table for the names
 #   hand over Node objects to Edge objects
-# - remove private attributes
 # - fix comments
 # - add type hints
 # - add logging
