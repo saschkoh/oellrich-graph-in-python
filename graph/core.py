@@ -1,5 +1,4 @@
 from typing import List
-from constants import NO_INDEX
 from base_classes import Neighbour
 from pathlib import Path
 
@@ -24,14 +23,16 @@ class Node:
             name: str = None,
             x_coord: float = None,
             y_coord: float = None,
+            index: int = None,
             weight: float = None
             ):
         self.name = name
         self.x_coord = x_coord
         self.y_coord = y_coord
+        self.index = index
         self.weight = weight
 
-    def load_from_string(self, string: str) -> None:
+    def load_from_string(self, string: str, index: int) -> None:
         """
         This method can be used as an alternative constructor. It takes a string
         of the format "name x_coord y_coord weight" and sets the corresponding
@@ -54,6 +55,7 @@ class Node:
         self.name = components[0]
         self.x_coord = float(components[1])
         self.y_coord = float(components[2])
+        self.index = index
 
     @property
     def allowed(self) -> bool:
@@ -84,14 +86,16 @@ class Edge:
             name: str = None,
             i_head: int = None,
             i_tail: int = None,
+            index: int = None,
             weight: float = None
             ):
         self.name = name
         self.i_head = i_head
         self.i_tail = i_tail
+        self.index = index
         self.weight = weight
 
-    def load_from_string(self, string: str, nodes: dict[int, Node]) -> None:
+    def load_from_string(self, string: str, nodes: dict[int, Node], index: int) -> None:
         """
         This method can be used as an alternative constructor. It takes a string
         of the format "name head_name tail_name" and sets the corresponding
@@ -117,11 +121,12 @@ class Edge:
         # nodes list. This is done by the graph class.
         self.i_head = nodes.nodes[int(components[1])]
         self.i_tail = nodes.nodes[int(components[2])]
+        self.index = index
 
     @property
     def allowed(self) -> bool:
         """ returns whether the edge got deleted or not """
-        return bool(self.name and self.name.strip())
+        return self.name != ""
 
     @property
     def __str__(self) -> str:
@@ -132,7 +137,7 @@ class Edge:
         return out_string
 
 
-class File:
+class GraphReader:
     """
     Class for loading and reading the file containing the graph data
     """
@@ -166,106 +171,51 @@ class File:
             raise ValueError(f"Directedness not specified correctly in file {self.path}")
 
     @property
-    def nodes_dict(self):
-        nodes_dict = {}
-        for i, node in enumerate(self.nodes_raw):
-            nodes_dict[i] = Node().load_from_string(node)
-        return nodes_dict
-
-    @property
     def nodes(self):
-        return list(self.nodes_dict.values())
+        return [Node().load_from_string(node, i) for i, node in enumerate(self.nodes_raw)]
 
     @property
     def edges(self):
         edges = []
-        for edge in self.edges_raw:
-            edges.append(Edge().load_from_string(edge, self.nodes_dict))
+        for i, edge in enumerate(self.edges_raw):
+            edges.append(Edge().load_from_string(edge, self.nodes_dict), i)
         return edges
-
+    
+    def read(self):
+        """
+        Method for instantiating the Graph class from a file
+        """
+        return Graph(self.directed, self.nodes, self.edges)
 
 class Graph:
     """
     Class for a graph data structure
     translation of the graph class from the C++ implementation of Martin Oellrich
     """
-    def __init__(self, directed: bool = True, filename: str = None):
+    def __init__(
+        self, directed: bool = True,
+        nodes: list[Node] = None,
+        edges: list[Edge] = None
+    ):
         self.directed = directed
-        self.node_count = 0
-        self.edge_count = 0
-        self.nodes = []
-        self.edges = []
+        self.nodes = nodes
+        self.edges = edges
+        self.node_count = len(self.nodes)
+        self.edge_count = len(self.edges)
         self.forward_neighbours = []
         self.backward_neighbours = []
-        # load graph from file if filename is given
-        if filename is not None:
-            if not isinstance(filename, str):
-                raise TypeError("Graph: __init__(filename)", filename)
-            if not Path(filename).is_file():
-                raise FileNotFoundError("Graph: __init__(filename)", filename)
-            self.load_from_file(filename)
 
-    def load_from_file(self, filename: str):
-        """ Reads the graph from a file """
-        # open file, read lines and remove comments and empty lines
-        with open(f"{filename}", "r") as file:
-            lines = []
-            for line in file.readlines():
-                line = line.split("#")[0].strip()
-                if line != "":
-                    lines.append(line)
-        # retrieve number of nodes and edges and directedness
-        number_of_nodes = int(lines[0])
-        number_of_edges = int(lines[1])
-        if lines[2] in ["ungerichtet", "undirected", "u", "U"]:
-            self.directed = False
-        # retrieve node names and coordinates
-        for i in range(3, 3 + number_of_nodes):
-            node_data = lines[i].split()
-            self.add_node(Node(node_data[0], x_coord=float(node_data[1]), y_coord=float(node_data[2])))
-        # retrieve edge data
-        for i in range(3 + number_of_nodes, 3 + number_of_nodes + number_of_edges):
-            edge_data = lines[i].split()
-            self.add_edge(Edge(edge_data[0], self.node_index(edge_data[1]), self.node_index(edge_data[2])))
+    def node_by_name(self, name: str) -> Node:
+        for node in self.nodes:
+            if node.name == name:
+                return node
+        raise ValueError(f"Graph: node_by_name(name), Node {name} not found!")
 
-    # get-methods with parameters
-    def node_allowed(self, i: int) -> bool:
-        """ returns whether the node is allowed or not """
-        return self.nodes[i].allowed()
-
-    def edge_allowed(self, j: int) -> bool:
-        """ returns whether the edge is allowed or not """
-        return self.edges[j].allowed()
-
-    def node(self, i: int) -> str:
-        """ returns the node at the given index """
-        if i >= self.node_count:
-            raise IndexError("Graph: node(i)", i, self.node_count)
-        if not self.node_allowed(i):
-            raise ValueError("Graph: node(i), Node ", i)
-        return self.nodes[i]
-
-    def edge(self, j: int) -> str:
-        """ returns the edge at the given index """
-        if j >= self.edge_count:
-            raise IndexError("Graph: edge(j)", j, self.edge_count)
-        if not self.edge_allowed(j):
-            raise ValueError("Graph: edge(j), Edge ", j)
-        return self.edges[j]
-
-    def node_index(self, name: str) -> int:
-        """ returns the index of the node with the given name """
-        for i in range(self.node_count):
-            if self.nodes[i].name == name:
-                return i
-        return NO_INDEX
-
-    def edge_index(self, name: str) -> int:
-        """ returns the index of the edge with the given name """
-        for j in range(self.edge_count):
-            if self.edges[j].name == name:
-                return j
-        return NO_INDEX
+    def edge_by_name(self, name: str) -> Edge:
+        for edge in self.edges:
+            if edge.name == name:
+                return edge
+        raise ValueError(f"Graph: edge_by_name(name), Edge {name} not found!")
 
     def get_forward_neighbours(self, i: int) -> List[Neighbour]:
         """ returns the forward neighbours of the node at the given index """
