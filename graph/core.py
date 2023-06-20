@@ -10,6 +10,7 @@ from pathlib import Path
 # - add type hints
 # - add logging
 # - add tests
+# - fix function read in class GraphReader (two functions with same name)
 
 
 class Node:
@@ -25,7 +26,7 @@ class Node:
             y_coord: float = None,
             index: int = None,
             weight: float = None
-            ):
+    ):
         self.name = name
         self.x_coord = x_coord
         self.y_coord = y_coord
@@ -62,7 +63,6 @@ class Node:
         """ returns whether the node got deleted or not """
         return self.name != ""
 
-    @property
     def __str__(self) -> str:
         """
         Prints and returns relevant information about the node. The x and y
@@ -88,7 +88,7 @@ class Edge:
             i_tail: int = None,
             index: int = None,
             weight: float = None
-            ):
+    ):
         self.name = name
         self.i_head = i_head
         self.i_tail = i_tail
@@ -128,7 +128,6 @@ class Edge:
         """ returns whether the edge got deleted or not """
         return self.name != ""
 
-    @property
     def __str__(self) -> str:
         """ prints and returns relevant information about the edge """
         out_string = f"{self.name} ({self.i_head}, {self.i_tail})"
@@ -165,10 +164,9 @@ class GraphReader:
     def directed(self):
         if self.directed_raw in ["ungerichtet", "undirected", "u", "U"]:
             return False
-        elif self.directed_raw in ["gerichtet", "directed", "g", "G"]:
+        if self.directed_raw in ["gerichtet", "directed", "g", "G"]:
             return True
-        else:
-            raise ValueError(f"Directedness not specified correctly in file {self.path}")
+        raise ValueError(f"Directedness not specified correctly in file {self.path}")
 
     @property
     def nodes(self):
@@ -186,6 +184,7 @@ class GraphReader:
         Method for instantiating the Graph class from a file
         """
         return Graph(self.directed, self.nodes, self.edges)
+
 
 class Graph:
     """
@@ -221,7 +220,7 @@ class Graph:
         """ returns the forward neighbours of the node at the given index """
         if i >= self.node_count:
             raise IndexError("Graph: get_forward_neighbours(i)", i, self.edge_count)
-        if not self.node_allowed(i):
+        if not self.nodes[i].allowed:
             raise ValueError("Graph: get_forward_neighbours(i), Node ", i)
         return self.forward_neighbours[i]
 
@@ -229,7 +228,7 @@ class Graph:
         """ returns the backward neighbours of the node at the given index """
         if i >= self.node_count:
             raise IndexError("Graph: get_backward_neighbours(i)", i, self.node_count)
-        if not self.node_allowed(i):
+        if not self.nodes[i].allowed:
             raise ValueError("Graph: get_backward_neighbours(i), Node ", i)
         if not self.directed:
             return self.forward_neighbours[i]
@@ -250,7 +249,7 @@ class Graph:
 
     # for undirected graphs only
     def extent(self, i: int) -> int:
-        """ returns the number of neighbours of the node at the given index for undirected graphs """
+        """ returns the number of neighbours of the node at the given index """
         return len(self.forward_extent(i))
 
     def add_node(self, new_node: Node):
@@ -297,7 +296,7 @@ class Graph:
     def delete_node(self, i: int):
         """ deletes the node at the given index, returns true if successful """
         # check if node got deleted already
-        if not self.node_allowed(i):
+        if not self.nodes[i].allowed:
             return False
         # delete all edges connected to the node
         neighbours = self.forward_neighbours[i].copy()
@@ -317,7 +316,7 @@ class Graph:
     def delete_edge(self, j: int):
         """ deletes the edge at the given index, returns true if successful """
         # check if edge is valid
-        if not self.edge_allowed(j):
+        if not self.edges[j].allowed:
             return False
         # delete edges[j] from forward_neighbours
         forward_neighbours = self.forward_neighbours[self.edges[j].i_tail]
