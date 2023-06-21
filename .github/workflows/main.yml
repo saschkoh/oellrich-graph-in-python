@@ -14,4 +14,9 @@ jobs:
     - run: |
         sudo python3 -m pip install -r requirements.txt
     - run: |
+        python3 -m unittest test.test_node
+        python3 -m unittest test.test_edge
         python3 -m unittest test.test_graph
+        python3 -m unittest test.test_graph_reader
+        python3 -m unittest test.test_graph_writer
+    
