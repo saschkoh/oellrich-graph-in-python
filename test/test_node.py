@@ -11,8 +11,8 @@ class TestNode(TestCase):
         self.assertEqual(node.y_coord, None)
         self.assertEqual(node.index, None)
         self.assertEqual(node.weight, None)
-        self.assertEqual(node.f_neighbors, [])
-        self.assertEqual(node.b_neighbors, [])
+        self.assertEqual(node.f_neighbors, set())
+        self.assertEqual(node.b_neighbors, set())
 
     def test_load_from_string_int(self):
         node = Node()
@@ -22,8 +22,8 @@ class TestNode(TestCase):
         self.assertEqual(node.y_coord, 0)
         self.assertEqual(node.index, 0)
         self.assertEqual(node.weight, None)
-        self.assertEqual(node.f_neighbors, [])
-        self.assertEqual(node.b_neighbors, [])
+        self.assertEqual(node.f_neighbors, set())
+        self.assertEqual(node.b_neighbors, set())
 
     def test_load_from_string_float(self):
         node = Node()
@@ -33,8 +33,8 @@ class TestNode(TestCase):
         self.assertEqual(node.y_coord, 3.14159)
         self.assertEqual(node.index, 500)
         self.assertEqual(node.weight, None)
-        self.assertEqual(node.f_neighbors, [])
-        self.assertEqual(node.b_neighbors, [])
+        self.assertEqual(node.f_neighbors, set())
+        self.assertEqual(node.b_neighbors, set())
 
     def test_load_from_str_to_set_node(self):
         node = Node("A")
@@ -51,7 +51,7 @@ class TestNode(TestCase):
 
     def test_allowed(self):
         node = Node()
-        self.assertTrue(node.allowed)
+        self.assertFalse(node.allowed)
         node.load_from_string("A 0 0", 0)
         self.assertTrue(node.allowed)
 
@@ -84,14 +84,14 @@ class TestNode(TestCase):
         )
 
     def test_clear(self):
-        node = Node(name="A", x_coord=1, y_coord=2, index=3, weight=4)
-        node.f_neighbors = [Node(name="B"), Node(name="C")]
-        node.b_neighbors = [Node(name="D"), Node(name="E")]
+        node = Node("A", 1, 2, 3, 4)
+        node.f_neighbors.add(Node("B", 5, 6, 7, 8))
+        node.b_neighbors.add(Node())
         node.clear()
         self.assertEqual(node.name, None)
         self.assertEqual(node.x_coord, None)
         self.assertEqual(node.y_coord, None)
         self.assertEqual(node.index, 3)
         self.assertEqual(node.weight, None)
-        self.assertEqual(node.f_neighbors, [])
-        self.assertEqual(node.b_neighbors, [])
+        self.assertEqual(node.f_neighbors, set())
+        self.assertEqual(node.b_neighbors, set())

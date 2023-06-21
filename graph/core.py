@@ -98,23 +98,6 @@ class Node:
             out_string += f", weight: {self.weight}"
         return out_string
 
-    def __eq__(self, __value: object) -> bool:
-        """
-        Two nodes are equal if all their attributes are equal.
-        """
-        if isinstance(__value, Node):
-            if all([
-                self.name == __value.name,
-                self.x_coord == __value.x_coord,
-                self.y_coord == __value.y_coord,
-                self.index == __value.index,
-                self.weight == __value.weight
-            ]):
-                return True
-        else:
-            raise TypeError("Can only compare two Node objects!")
-        return False
-
 
 class Edge:
     """
@@ -197,23 +180,6 @@ class Edge:
         if self.weight is not None:
             out_string += f", weight: {self.weight}"
         return out_string
-
-    def __eq__(self, __value: object) -> bool:
-        """
-        Two edges are equal if all their attributes are equal.
-        """
-        if isinstance(__value, Edge):
-            if all([
-                self.name == __value.name,
-                self.head == __value.head,
-                self.tail == __value.tail,
-                self.index == __value.index,
-                self.weight == __value.weight
-            ]):
-                return True
-        else:
-            raise TypeError("Can only compare two Edge objects!")
-        return False
 
 
 class Graph:

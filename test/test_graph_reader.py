@@ -3,6 +3,36 @@ from pathlib import Path
 
 from graph.core import Node, Edge, GraphReader
 
+def compare_nodes(node1, node2):
+    return all([
+        node1.name == node2.name,
+        node1.x_coord == node2.x_coord,
+        node1.y_coord == node2.y_coord,
+        node1.index == node2.index,
+        node1.weight == node2.weight,
+        node1.f_neighbors == node2.f_neighbors,
+        node1.b_neighbors == node2.b_neighbors,
+    ])
+
+def compare_node_lists(list1, list2):
+    return all(
+        [compare_nodes(node1, node2) for node1, node2 in zip(list1, list2)]
+    )
+
+def compare_edges(edge1, edge2):
+    return all([
+        edge1.name == edge2.name,
+        edge1.head.name == edge2.head.name,
+        edge1.tail.name == edge2.tail.name,
+        edge1.index == edge2.index,
+        edge1.weight == edge2.weight,
+    ])
+
+def compare_edge_lists(list1, list2):
+    return all(
+        [compare_edges(edge1, edge2) for edge1, edge2 in zip(list1, list2)]
+    )
+
 
 class TestGraphReader(TestCase):
     # define nodes and edges for testing
@@ -31,7 +61,7 @@ class TestGraphReader(TestCase):
         # check if the graph was loaded correctly
         self.assertEqual(graph.name, "")
         self.assertEqual(graph.directed, False)
-        self.assertEqual(
+        self.assertTrue(compare_node_lists(
             graph.nodes,
             [
                 self.node_a,
@@ -44,8 +74,8 @@ class TestGraphReader(TestCase):
                 self.node_h,
                 self.node_i,
             ]
-        )
-        self.assertEqual(
+        ))
+        self.assertTrue(compare_edge_lists(
             graph.edges,
             [
                 self.edge_ab,
@@ -58,6 +88,6 @@ class TestGraphReader(TestCase):
                 self.edge_fi,
                 self.edge_hi,
             ]
-        )
+        ))
         self.assertEqual(graph.node_count, 9)
         self.assertEqual(graph.edge_count, 9)
