@@ -1,6 +1,9 @@
-from typing import List
-from base_classes import Neighbour
-from pathlib import Path
+"""
+This module contains the core classes for the graph data structure. The
+classes can be used to construct a graph from a file or to construct a graph
+manually.
+"""
+from functools import lru_cache
 
 # TODO
 # - change entire structure: GraphReader --> attributes, Nodes, Edges --> Graph
@@ -10,7 +13,6 @@ from pathlib import Path
 # - add type hints
 # - add logging
 # - add tests
-# - fix function read in class GraphReader (two functions with same name)
 
 
 class Node:
@@ -26,12 +28,14 @@ class Node:
             y_coord: float = None,
             index: int = None,
             weight: float = None
-    ):
+    ) -> None:
         self.name = name
         self.x_coord = x_coord
         self.y_coord = y_coord
         self.index = index
         self.weight = weight
+        self.f_neighbors = []
+        self.b_neighbors = []
 
     def load_from_string(self, string: str, index: int) -> None:
         """
@@ -84,18 +88,18 @@ class Edge:
     def __init__(
             self,
             name: str = None,
-            i_head: int = None,
-            i_tail: int = None,
+            head: Node = None,
+            tail: Node = None,
             index: int = None,
             weight: float = None
-    ):
+    ) -> None:
         self.name = name
-        self.i_head = i_head
-        self.i_tail = i_tail
+        self.head = head
+        self.tail = tail
         self.index = index
         self.weight = weight
 
-    def load_from_string(self, string: str, nodes: dict[int, Node], index: int) -> None:
+    def load_from_string(self, string: str, nodes_dict: dict[str, Node], index: int) -> None:
         """
         This method can be used as an alternative constructor. It takes a string
         of the format "name head_name tail_name" and sets the corresponding
@@ -103,7 +107,7 @@ class Edge:
         the method will raise an exception.
         """
         # check if any of the parameters are already set
-        for param in [self.name, self.i_head, self.i_tail, self.weight]:
+        for param in [self.name, self.head, self.tail, self.weight]:
             if param is not None:
                 raise ValueError(
                     f"Edge: load_from_string() parameter {param} is already set!"
@@ -119,35 +123,150 @@ class Edge:
         self.name = components[0]
         # in order to get the index of a node, we need to look it up in the
         # nodes list. This is done by the graph class.
-        self.i_head = nodes.nodes[int(components[1])]
-        self.i_tail = nodes.nodes[int(components[2])]
+        self.head = nodes_dict[components[1]]
+        self.tail = nodes_dict[components[2]]
         self.index = index
 
     @property
     def allowed(self) -> bool:
-        """ returns whether the edge got deleted or not """
+        """
+        returns whether the edge got deleted or not
+        """
         return self.name != ""
 
     def __str__(self) -> str:
-        """ prints and returns relevant information about the edge """
-        out_string = f"{self.name} ({self.i_head}, {self.i_tail})"
+        """
+        prints and returns relevant information about the edge
+        """
+        out_string = f"{self.name} ({self.head}, {self.tail})"
         if self.weight is not None:
             out_string += f" [{self.weight}]"
         return out_string
+
+
+class Graph:
+    """
+    Class for a graph data structure translation of the graph class
+    from the C++ implementation of Martin Oellrich
+    """
+    def __init__(
+        self,
+        name: str = "",
+        directed: bool = True,
+        nodes: list[Node] = None,
+        edges: list[Edge] = None
+    ):
+        self.name = name
+        self.directed = directed
+        self.nodes = nodes
+        self.edges = edges
+        self.node_count = len(self.nodes)
+        self.edge_count = len(self.edges)
+
+    def node_by_name(self, name: str) -> Node:
+        """
+        Returns the node with the given name.
+        """
+        # TODO: this is a linear search, maybe use a dictionary instead
+        for node in self.nodes:
+            if node.name == name:
+                return node
+        raise ValueError(f"Graph: node_by_name(name), Node {name} not found!")
+
+    def edge_by_name(self, name: str) -> Edge:
+        """
+        Returns the Edge object with a given name
+        """
+        # TODO: this is a linear search, maybe use a dictionary instead
+        for edge in self.edges:
+            if edge.name == name:
+                return edge
+        raise ValueError(f"Graph: edge_by_name(name), Edge {name} not found!")
+
+    def init_neighbors(self) -> None:
+        """
+        Searches the edges for forward and backward neighbors and stores them
+        in the corresponding lists of the nodes.
+        """
+        for edge in self.edges:
+            edge.head.f_neighbors.append(edge.tail)
+            if self.directed:
+                edge.tail.b_neighbors.append(edge.head)
+        if not self.directed:
+            for node in self.nodes:
+                node.b_neighbors = node.f_neighbors
+
+    def auto_name(self) -> None:
+        """
+        Creates a name for the graph based on the names of the nodes and edges.
+        """
+        if self.name == "":
+            return f"graph_directed-{self.directed}_{self.node_count}-nodes_{self.edge_count}-edges"
+        return self.name
 
 
 class GraphReader:
     """
     Class for loading and reading the file containing the graph data
     """
-    def __init__(self, path: str):
-        self.__path = Path(path)
-        if not self.__path.is_file():
-            raise FileNotFoundError("File: __init__()", self.__path)
+    def __init__(self, path: str) -> None:
+        self.path = path
+        self.node_count = None
+        self.edge_count = None
+        self.directed_raw = None
+        self.nodes_raw = None
+        self.edges_raw = None
 
-    def read(self):
+    @property
+    def directed(self) -> bool:
+        """
+        Returns whether the graph is directed or not. The directedness is
+        saved as a string in the file.
+        """
+        if self.directed_raw in ["ungerichtet", "undirected", "u", "U"]:
+            return False
+        if self.directed_raw in ["gerichtet", "directed", "g", "G"]:
+            return True
+        raise ValueError(f"Directedness not specified correctly in file {self.path}")
+
+    @lru_cache
+    def nodes_dict(self) -> dict[str, Node]:
+        """
+        Creates a dictionary with the node names as keys and the node objects as
+        values.
+        """
+        nodes_dict = {}
+        for i, node_string in enumerate(self.nodes_raw):
+            node = Node()
+            node.load_from_string(node_string, i)
+            nodes_dict[node.name] = node
+        return nodes_dict
+
+    @property
+    def nodes(self) -> list[Node]:
+        """
+        Returns the list of Node objects of the graph
+        """
+        return list(self.nodes_dict().values())
+
+    @property
+    def edges(self) -> list[Edge]:
+        """
+        This method creates a list of edges from the raw edge strings. The nodes_dict is
+        needed to look up the nodes by their names.
+        """
+        edges = []
+        for i, edge in enumerate(self.edges_raw):
+            edge = Edge()
+            edges.append(edge.load_from_string(edge, self.nodes_dict(), i))
+        return edges
+
+    def read(self) -> Graph:
+        """
+        Main function of the class. It reads the file and creates a graph object.
+        """
         # open file, read lines and remove comments and empty lines
-        with open(f"{self.path}", "r") as file:
+        with open(f"{self.path}", "r", encoding="utf-8") as file:
             lines = []
             for line in file.readlines():
                 line = line.split("#")[0].strip()
@@ -159,182 +278,94 @@ class GraphReader:
         self.directed_raw = lines.pop(0)
         self.nodes_raw = lines[:self.node_count]
         self.edges_raw = lines[self.node_count:self.node_count + self.edge_count]
-
-    @property
-    def directed(self):
-        if self.directed_raw in ["ungerichtet", "undirected", "u", "U"]:
-            return False
-        if self.directed_raw in ["gerichtet", "directed", "g", "G"]:
-            return True
-        raise ValueError(f"Directedness not specified correctly in file {self.path}")
-
-    @property
-    def nodes(self):
-        return [Node().load_from_string(node, i) for i, node in enumerate(self.nodes_raw)]
-
-    @property
-    def edges(self):
-        edges = []
-        for i, edge in enumerate(self.edges_raw):
-            edges.append(Edge().load_from_string(edge, self.nodes_dict), i)
-        return edges
-    
-    def read(self):
-        """
-        Method for instantiating the Graph class from a file
-        """
+        # create graph
         return Graph(self.directed, self.nodes, self.edges)
 
 
-class Graph:
+class GraphWriter:
     """
-    Class for a graph data structure
-    translation of the graph class from the C++ implementation of Martin Oellrich
+    This class is used to create a text file from a graph object.
     """
-    def __init__(
-        self, directed: bool = True,
-        nodes: list[Node] = None,
-        edges: list[Edge] = None
-    ):
-        self.directed = directed
-        self.nodes = nodes
-        self.edges = edges
-        self.node_count = len(self.nodes)
-        self.edge_count = len(self.edges)
-        self.forward_neighbours = []
-        self.backward_neighbours = []
+    def __init__(self, graph: Graph, path: str, lang: str = "ger") -> None:
+        self.graph = graph
+        self.path = path
+        self.lang = lang
+        self.text = ""
 
-    def node_by_name(self, name: str) -> Node:
-        for node in self.nodes:
-            if node.name == name:
-                return node
-        raise ValueError(f"Graph: node_by_name(name), Node {name} not found!")
+    def write_blank_line(self) -> None:
+        """
+        Writes blank line.
+        """
+        self.text += "\n"
 
-    def edge_by_name(self, name: str) -> Edge:
-        for edge in self.edges:
-            if edge.name == name:
-                return edge
-        raise ValueError(f"Graph: edge_by_name(name), Edge {name} not found!")
-
-    def get_forward_neighbours(self, i: int) -> List[Neighbour]:
-        """ returns the forward neighbours of the node at the given index """
-        if i >= self.node_count:
-            raise IndexError("Graph: get_forward_neighbours(i)", i, self.edge_count)
-        if not self.nodes[i].allowed:
-            raise ValueError("Graph: get_forward_neighbours(i), Node ", i)
-        return self.forward_neighbours[i]
-
-    def get_backward_neighbours(self, i: int) -> List[Neighbour]:
-        """ returns the backward neighbours of the node at the given index """
-        if i >= self.node_count:
-            raise IndexError("Graph: get_backward_neighbours(i)", i, self.node_count)
-        if not self.nodes[i].allowed:
-            raise ValueError("Graph: get_backward_neighbours(i), Node ", i)
-        if not self.directed:
-            return self.forward_neighbours[i]
-        return self.backward_neighbours[i]
-
-    # for undirected graphs only
-    def neighbours(self, i: int) -> List[Neighbour]:
-        """ returns the neighbours of the node at the given index for undirected graphs """
-        return self.get_forward_neighbours(i)
-
-    def forward_extent(self, i: int) -> int:
-        """ returns the number of forward neighbours of the node at the given index """
-        return len(self.get_forward_neighbours(i))
-
-    def backward_extent(self, i: int) -> int:
-        """ returns the number of backward neighbours of the node at the given index """
-        return len(self.get_backward_neighbours(i))
-
-    # for undirected graphs only
-    def extent(self, i: int) -> int:
-        """ returns the number of neighbours of the node at the given index """
-        return len(self.forward_extent(i))
-
-    def add_node(self, new_node: Node):
-        """ adds a node to the graph and returns its index """
-        # check if there is a deleted node, insert there if possible
-        if self.node_count < len(self.nodes):
-            for i, node in enumerate(self.nodes):
-                if not node.allowed():
-                    node = new_node
-                    i_node = i
-                    break
+    def write_graph_info(self) -> None:
+        """
+        Writes the graph information to the text file.
+        """
+        # write graph information
+        self.text += f"{self.graph.node_count}\n"
+        self.text += f"{self.graph.edge_count}\n"
+        if self.graph.directed:
+            if self.lang == "ger":
+                self.text += "gerichtet\n"
+            elif self.lang == "eng":
+                self.text += "directed\n"
+            else:
+                raise ValueError(f"Language {self.lang} not supported")
         else:
-            self.nodes.append(new_node)
-            i_node = len(self.nodes) - 1
-            self.forward_neighbours.append([])
-            if self.directed is True:
-                self.backward_neighbours.append([])
-        # count new node and return index
-        self.node_count += 1
-        return i_node
+            if self.lang == "ger":
+                self.text += "ungerichtet\n"
+            elif self.lang == "eng":
+                self.text += "undirected\n"
+            else:
+                raise ValueError(f"Language {self.lang} not supported")
 
-    def add_edge(self, new_edge: Edge):
-        """ adds an edge to the graph and returns its index or NO_INDEX if not possible """
-        # check if there is a deleted edge, insert there if possible
-        if self.edge_count < len(self.edges):
-            for j, edge in enumerate(self.edges):
-                if not edge.allowed():
-                    edge = new_edge
-                    j_edge = j
-                    break
+    def write_nodes(self) -> None:
+        """
+        Writes the node information to the text file.
+        """
+        self.write_blank_line()
+        if self.lang == "ger":
+            self.text += "# Knotenname xKoord yKoord\n"
+        elif self.lang == "eng":
+            self.text += "# NodeName xCoord yCoord\n"
         else:
-            self.edges.append(new_edge)
-            j_edge = len(self.edges) - 1
-        # count new edge and return index
-        self.edge_count += 1
-        # set neighbours
-        self.forward_neighbours[new_edge.i_tail].append(Neighbour(new_edge.i_head, j_edge))
-        if self.directed is True:
-            self.backward_neighbours[new_edge.i_head].append(Neighbour(new_edge.i_tail, j_edge))
+            raise ValueError(f"Language {self.lang} not supported")
+        self.write_blank_line()
+        # write nodes
+        for node in self.graph.nodes:
+            self.text += f"{node.name} {node.x_coord} {node.y_coord}\n"
+
+    def write_edges(self) -> None:
+        """
+        Writes the edge information to the text file.
+        """
+        self.write_blank_line()
+        if self.lang == "ger":
+            self.text += "# Kantename Knotenname1 Knotenname2\n"
+        elif self.lang == "eng":
+            self.text += "# EdgeName NodeName1 NodeName2\n"
         else:
-            self.forward_neighbours[new_edge.i_head].append(Neighbour(new_edge.i_tail, j_edge))
-        return j_edge
+            raise ValueError(f"Language {self.lang} not supported")
+        self.write_blank_line()
+        # write edges
+        for edge in self.graph.edges:
+            self.text += f"{edge.name} {edge.head.name} {edge.tail.name}\n"
 
-    def delete_node(self, i: int):
-        """ deletes the node at the given index, returns true if successful """
-        # check if node got deleted already
-        if not self.nodes[i].allowed:
-            return False
-        # delete all edges connected to the node
-        neighbours = self.forward_neighbours[i].copy()
-        for neighbour in neighbours:
-            self.delete_edge(neighbour.j)
-        # for directed graphs also delete all edges pointing towards the node
-        if self.directed is True:
-            neighbours = self.backward_neighbours[i].copy()
-            for neighbour in neighbours:
-                self.delete_edge(neighbour.j)
-        # overwrite with default node
-        self.nodes[i] = Node()
-        # reduce node count
-        self.node_count -= 1
-        return True
+    def save(self) -> None:
+        """
+        Saves the text file.
+        """
+        with open(f"{self.path}/{self.graph.auto_name()}", "w", encoding="utf-8") as file:
+            file.write(self.text)
 
-    def delete_edge(self, j: int):
-        """ deletes the edge at the given index, returns true if successful """
-        # check if edge is valid
-        if not self.edges[j].allowed:
-            return False
-        # delete edges[j] from forward_neighbours
-        forward_neighbours = self.forward_neighbours[self.edges[j].i_tail]
-        for neighbour in forward_neighbours:
-            if neighbour.j() == j:
-                neighbour = forward_neighbours[-1]
-                forward_neighbours.pop()
-                break
-        # delete edges[j] from backward_neighbours
-        if self.directed is True:
-            backward_neighbours = self.backward_neighbours[self.edges[j].i_head]
-            for neighbour in backward_neighbours:
-                if neighbour.j() == j:
-                    neighbour = backward_neighbours[-1]
-                    backward_neighbours.pop()
-                    break
-        # overwrite with default edge
-        self.edges[j] = Edge()
-        # reduce edge count
-        self.edge_count -= 1
-        return True
+    def write(self) -> None:
+        """
+        Writes the graph to the text file.
+        """
+        # write graph
+        self.write_graph_info()
+        self.write_nodes()
+        self.write_edges()
+        # save file
+        self.save()
