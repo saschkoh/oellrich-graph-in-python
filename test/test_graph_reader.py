@@ -3,6 +3,7 @@ from pathlib import Path
 
 from graph.core import Node, Edge, GraphReader
 
+
 def compare_nodes(node1, node2):
     return all([
         node1.name == node2.name,
@@ -14,10 +15,12 @@ def compare_nodes(node1, node2):
         node1.b_neighbors == node2.b_neighbors,
     ])
 
+
 def compare_node_lists(list1, list2):
     return all(
         [compare_nodes(node1, node2) for node1, node2 in zip(list1, list2)]
     )
+
 
 def compare_edges(edge1, edge2):
     return all([
@@ -27,6 +30,7 @@ def compare_edges(edge1, edge2):
         edge1.index == edge2.index,
         edge1.weight == edge2.weight,
     ])
+
 
 def compare_edge_lists(list1, list2):
     return all(
