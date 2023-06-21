@@ -4,16 +4,11 @@ classes can be used to construct a graph from a file or to construct a graph
 manually.
 """
 from functools import lru_cache
+from pathlib import Path
 
 # TODO
-# - change entire structure: GraphReader --> attributes, Nodes, Edges --> Graph
-#   when creating the Node objects, create hash table for the names
-#   hand over Node objects to Edge objects
 # - fix comments
-# - add type hints
 # - add logging
-# - add tests
-# - modify GraphWriter class to sort nodes by index
 
 
 class Node:
@@ -343,8 +338,16 @@ class GraphWriter:
         Writes the graph information to the text file.
         """
         # write graph information
-        self.text += f"{self.graph.node_count}\n"
-        self.text += f"{self.graph.edge_count}\n"
+        self.text += f"{self.graph.node_count}"
+        if self.lang == "ger":
+            self.text += "   # Knoten\n"
+        elif self.lang == "eng":
+            self.text += "   # nodes\n"
+        self.text += f"{self.graph.edge_count}"
+        if self.lang == "ger":
+            self.text += "   # Kanten\n"
+        elif self.lang == "eng":
+            self.text += "   # edges\n"
         if self.graph.directed:
             if self.lang == "ger":
                 self.text += "gerichtet\n"
@@ -374,7 +377,10 @@ class GraphWriter:
         self.write_blank_line()
         # write nodes
         for node in self.graph.nodes:
-            self.text += f"{node.name} {node.x_coord} {node.y_coord}\n"
+            # make integers of coordinates if they are integers
+            x = int(node.x_coord) if node.x_coord.is_integer() else node.x_coord
+            y = int(node.y_coord) if node.y_coord.is_integer() else node.y_coord
+            self.text += f"{node.name} {x} {y}\n"
 
     def write_edges(self) -> None:
         """
@@ -382,7 +388,7 @@ class GraphWriter:
         """
         self.write_blank_line()
         if self.lang == "ger":
-            self.text += "# Kantename Knotenname1 Knotenname2\n"
+            self.text += "# Kantenname Knotenname1 Knotenname2\n"
         elif self.lang == "eng":
             self.text += "# EdgeName NodeName1 NodeName2\n"
         else:
@@ -391,13 +397,20 @@ class GraphWriter:
         # write edges
         for edge in self.graph.edges:
             self.text += f"{edge.name} {edge.head.name} {edge.tail.name}\n"
-        self.write_blank_line()
 
     def save(self) -> None:
         """
         Saves the text file.
         """
-        with open(f"{self.path}/{self.graph.auto_name()}", "w", encoding="utf-8") as file:
+        if self.path.endswith(".gra"):
+            path = Path(self.path)
+        elif Path(self.path).is_dir():
+            path = Path(self.path) / self.graph.auto_name() / ".gra"
+        elif self.path is None:
+            path = Path.cwd() / self.graph.auto_name() / ".gra"
+        else:
+            raise ValueError(f"Path {self.path} not valid")
+        with open(path, "w", encoding="utf-8") as file:
             file.write(self.text)
 
     def write(self) -> None:

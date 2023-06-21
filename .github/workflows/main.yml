@@ -18,3 +18,5 @@ jobs:
         python3 -m unittest test.test_edge
         python3 -m unittest test.test_graph
         python3 -m unittest test.test_graph_reader
+        python3 -m unittest test.test_graph_writer
+    

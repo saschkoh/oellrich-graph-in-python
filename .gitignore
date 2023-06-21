@@ -139,3 +139,6 @@ junk/
 
 # all .bin files in ./test
 test/*.bin
+
+# test file
+test/graph9-copy.gra
