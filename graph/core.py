@@ -340,8 +340,8 @@ class GraphWriter:
             'ger': ('Knoten', 'Kanten', 'gerichtet', 'ungerichtet'),
             'eng': ('nodes', 'edges', 'directed', 'undirected')
         }
-        for language in list(vocab.keys()):
-            if self.lang == language:
+        for language in vocab:
+            if language == self.lang:
                 self.text += f"{self.graph.node_count}   # {vocab[language][0]}\n"
                 self.text += f"{self.graph.edge_count}   # {vocab[language][1]}\n"
                 if self.graph.directed:
