@@ -3,7 +3,7 @@ from unittest import TestCase
 from graph.core import Node
 
 
-class TestGraph(TestCase):
+class TestNode(TestCase):
     def test_create_empty_node(self):
         node = Node()
         self.assertEqual(node.name, None)
@@ -58,7 +58,7 @@ class TestGraph(TestCase):
     def test_not_allowed(self):
         node = Node()
         node.load_from_string("A 0 0", 0)
-        node.name = ""
+        node.name = None
         self.assertFalse(node.allowed)
 
     def test_str_0(self):
@@ -82,3 +82,16 @@ class TestGraph(TestCase):
             str(node),
             "Object type: Node, name: A, x_coord: 0.0, y_coord: 0.0, index: 0, weight: 1.0"
         )
+
+    def test_clear(self):
+        node = Node(name="A", x_coord=1, y_coord=2, index=3, weight=4)
+        node.f_neighbors = [Node(name="B"), Node(name="C")]
+        node.b_neighbors = [Node(name="D"), Node(name="E")]
+        node.clear()
+        self.assertEqual(node.name, None)
+        self.assertEqual(node.x_coord, None)
+        self.assertEqual(node.y_coord, None)
+        self.assertEqual(node.index, 3)
+        self.assertEqual(node.weight, None)
+        self.assertEqual(node.f_neighbors, [])
+        self.assertEqual(node.b_neighbors, [])
