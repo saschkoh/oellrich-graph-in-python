@@ -1,10 +1,20 @@
+"""
+This module contains the unit test(s) for the GraphWriter class.
+"""
 from unittest import TestCase
 from pathlib import Path
 
 from graph.core import GraphReader, GraphWriter
 
+
 class TestGraphWriter(TestCase):
+    """
+    TestCase class for testing the GraphWriter class.
+    """
     def test_read_and_write(self):
+        """
+        Tests that a graph can be read from a file and replicated in a new file.
+        """
         # read graph from file
         graph = GraphReader("test/test-graphs/graph9.gra").read()
         # delete old file if it exists

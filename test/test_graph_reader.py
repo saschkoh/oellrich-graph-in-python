@@ -1,3 +1,6 @@
+"""
+This module contains the unit tests for the GraphReader class.
+"""
 from unittest import TestCase
 from pathlib import Path
 
@@ -5,6 +8,9 @@ from graph.core import Node, Edge, GraphReader
 
 
 def compare_nodes(node1, node2):
+    """
+    Compares all attributes of two nodes and returns True if they are equal.
+    """
     return all([
         node1.name == node2.name,
         node1.x_coord == node2.x_coord,
@@ -17,28 +23,40 @@ def compare_nodes(node1, node2):
 
 
 def compare_node_lists(list1, list2):
+    """
+    Compares nodes of same index in two lists and returns True if all are equal.
+    """
     return all(
-        [compare_nodes(node1, node2) for node1, node2 in zip(list1, list2)]
+        (compare_nodes(node1, node2) for node1, node2 in zip(list1, list2))
     )
 
 
 def compare_edges(edge1, edge2):
-    return all([
+    """
+    Compares all attributes of two edges and returns True if they are euqal.
+    """
+    return all((
         edge1.name == edge2.name,
         edge1.head.name == edge2.head.name,
         edge1.tail.name == edge2.tail.name,
         edge1.index == edge2.index,
         edge1.weight == edge2.weight,
-    ])
+    ))
 
 
 def compare_edge_lists(list1, list2):
+    """
+    Compares edges of the same index in two lists and returns True if all are equal.
+    """
     return all(
-        [compare_edges(edge1, edge2) for edge1, edge2 in zip(list1, list2)]
+        (compare_edges(edge1, edge2) for edge1, edge2 in zip(list1, list2))
     )
 
 
 class TestGraphReader(TestCase):
+    """
+    TestCase class for testing the GraphReader class.
+    """
     # define nodes and edges for testing
     node_a = Node("A", 0, 0, 0)
     node_b = Node("B", 1, 0, 1)
@@ -60,6 +78,9 @@ class TestGraphReader(TestCase):
     edge_hi = Edge("HI", node_h, node_i, 8)
 
     def test_with_file(self):
+        """
+        Tests if the GraphReader class extract the graph from a file successfully.
+        """
         path = f"{Path.cwd()}/test/test-graphs/graph9.gra"
         graph = GraphReader(path).read()
         # check if the graph was loaded correctly
