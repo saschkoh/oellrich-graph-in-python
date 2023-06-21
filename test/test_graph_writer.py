@@ -13,7 +13,7 @@ class TestGraphWriter(TestCase):
     """
     def test_read_and_write(self):
         """
-        Tests that a graph can be read from a file and replicated in a new file.
+        Tests if a graph can be read from a file and replicated in a new file.
         """
         # read graph from file
         graph = GraphReader("test/test-graphs/graph9.gra").read()

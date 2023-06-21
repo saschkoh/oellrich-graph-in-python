@@ -9,8 +9,6 @@ from pathlib import Path
 # TODO
 # - fix comments
 # - add logging
-# - test new implementation of GraphWriter.write_graph_info
-
 
 class Node:
     """
@@ -160,7 +158,7 @@ class Edge:
 
     def __str__(self) -> str:
         """
-        Prints and returns relevant information about the edge.
+        Returns relevant information about the edge if not None.
         """
         out_string = "Object type: Edge"
         if self.name is not None:
@@ -217,8 +215,8 @@ class Graph:
 
     def init_neighbors(self) -> None:
         """
-        Searches the edges for forward and backward neighbors and stores them
-        in the corresponding lists of the nodes.
+        Searches the edges for forward and backward neighbors and stores them in the corresponding
+        lists of the nodes.
         """
         for edge in self.edges:
             edge.head.f_neighbors.add(edge.tail)
@@ -253,8 +251,8 @@ class GraphReader:
     @property
     def directed(self) -> bool:
         """
-        Returns whether the graph is directed or not. The directedness is
-        saved as a string in the file.
+        Returns whether the graph is directed or not. The directedness is saved as a string
+        in the file.
         """
         if self.directed_raw in ["ungerichtet", "undirected", "u", "U"]:
             return False
@@ -285,8 +283,8 @@ class GraphReader:
     @property
     def edges(self) -> list[Edge]:
         """
-        This method creates a list of edges from the raw edge strings. The nodes_dict is
-        needed to look up the nodes by their names.
+        This method creates a list of edges from the raw edge strings. The nodes_dict is needed to
+        look up the nodes by their names.
         """
         edges = []
         for i, edge_raw in enumerate(self.edges_raw):
@@ -336,11 +334,12 @@ class GraphWriter:
         """
         Writes the graph information to the text file.
         """
-        # write graph information
+        # define languages and corresponding vocabulary
         vocab = {
             'ger': ('Knoten', 'Kanten', 'gerichtet', 'ungerichtet'),
             'eng': ('nodes', 'edges', 'directed', 'undirected')
         }
+        # write graph information in the specified language
         for language in vocab:
             if language == self.lang:
                 self.text += f"{self.graph.node_count}   # {vocab[language][0]}\n"
@@ -349,18 +348,25 @@ class GraphWriter:
                     self.text += f"{vocab[language][2]}\n"
                 else:
                     self.text += f"{vocab[language][3]}\n"
-                self.write_blank_line()
                 break
             raise ValueError(f"Language {self.lang} not supported")
+        self.write_blank_line()
 
     def write_nodes(self) -> None:
         """
         Writes the node information to the text file.
         """
-        if self.lang == "ger":
-            self.text += "# Knotenname xKoord yKoord\n"
-        elif self.lang == "eng":
-            self.text += "# NodeName xCoord yCoord\n"
+        # write header in the specified language
+        if all(v is not None for v in [self.graph.nodes[0].x_coord, self.graph.nodes[0].y_coord]):
+            if self.lang == "ger":
+                self.text += "# Knotenname xKoord yKoord\n"
+            elif self.lang == "eng":
+                self.text += "# NodeName xCoord yCoord\n"
+        elif all(v is None for v in [self.graph.nodes[0].x_coord, self.graph.nodes[0].y_coord]):
+            if self.lang == "ger":
+                self.text += "# Knotenname\n"
+            elif self.lang == "eng":
+                self.text += "# NodeName\n"
         else:
             raise ValueError(f"Language {self.lang} not supported")
         self.write_blank_line()
