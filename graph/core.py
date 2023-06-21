@@ -13,9 +13,9 @@ from pathlib import Path
 
 class Node:
     """
-    Class for representing a node and its optional coordinates and weight. The
-    class can be constructed with or without parameters. If no parameters are
-    given, the load_from_string method can be used as an alternative constructor.
+    Class for representing a node and its optional coordinates and weight. The class can be
+    constructed with or without parameters. If no parameters are given, the load_from_string method
+    can be used as an alternative constructor.
     """
     def __init__(
             self,
@@ -35,15 +35,16 @@ class Node:
 
     @property
     def allowed(self) -> bool:
-        """ returns whether the node got deleted or not """
+        """
+        Returns True if the node is empty or got cleared.
+        """
         return self.name is not None
 
     def load_from_string(self, string: str, index: int) -> None:
         """
-        This method can be used as an alternative constructor. It takes a string
-        of the format "name x_coord y_coord weight" and sets the corresponding
-        parameters of the node object. If any of the parameters are already set,
-        the method will raise an exception.
+        This method can be used as an alternative constructor. It takes a string of the format
+        "name x_coord y_coord weight" and sets the corresponding parameters of the node object.
+        If any of the parameters are already set, the method will raise an exception.
         """
         # check if any of the parameters are already set
         for param in [self.name, self.x_coord, self.y_coord, self.weight]:
@@ -77,8 +78,8 @@ class Node:
 
     def __str__(self) -> str:
         """
-        Prints and returns relevant information about the node. The x and y
-        coordinates are not relevant for the graph structure.
+        Prints and returns relevant information about the node. The x and y coordinates are not
+        relevant for the graph structure.
         """
         out_string = "Object type: Node"
         if self.name is not None:
@@ -96,10 +97,9 @@ class Node:
 
 class Edge:
     """
-    Class for representing an edge and the node indices it connects to. The
-    class can be constructed with or without parameters. If no parameters are
-    specified, the load_from_string method can be used as an alternative
-    constructor.
+    Class for representing an edge and the node indices it connects to. The class can be
+    constructed with or without parameters. If no parameters are specified, the load_from_string
+    method can be used as an alternative constructor.
     """
     def __init__(
             self,
@@ -118,16 +118,15 @@ class Edge:
     @property
     def allowed(self) -> bool:
         """
-        returns whether the edge got deleted or not
+        Returns True if the edge is empty or got cleared.
         """
         return self.name is not None
 
     def load_from_string(self, string: str, nodes_dict: dict[str, Node], index: int) -> None:
         """
-        This method can be used as an alternative constructor. It takes a string
-        of the format "name head_name tail_name" and sets the corresponding
-        parameters of the edge object. If any of the parameters are already set,
-        the method will raise an exception.
+        This method can be used as an alternative constructor. It takes a string of the format
+        "name head_name tail_name" and sets the corresponding parameters of the edge object.
+        If any of the parameters are already set, the method will raise an exception.
         """
         # check if any of the parameters are already set
         for param in [self.name, self.head, self.tail, self.weight]:
@@ -144,8 +143,7 @@ class Edge:
             )
         # set the parameters
         self.name = components[0]
-        # in order to get the index of a node, we need to look it up in the
-        # nodes list. This is done by the graph class.
+        # set head and tail nodes and index via look up in the nodes dictionary
         self.head = nodes_dict[components[1]]
         self.tail = nodes_dict[components[2]]
         self.index = index
@@ -161,7 +159,7 @@ class Edge:
 
     def __str__(self) -> str:
         """
-        prints and returns relevant information about the edge
+        Prints and returns relevant information about the edge.
         """
         out_string = "Object type: Edge"
         if self.name is not None:
@@ -179,8 +177,8 @@ class Edge:
 
 class Graph:
     """
-    Class for a graph data structure translation of the graph class
-    from the C++ implementation of Martin Oellrich
+    Class for a graph data structure. Translation of the graph class
+    from the C++ implementation of Martin Oellrich.
     """
     def __init__(
         self,
@@ -208,7 +206,7 @@ class Graph:
 
     def edge_by_name(self, name: str) -> Edge:
         """
-        Returns the Edge object with a given name
+        Returns the Edge object with a given name.
         """
         # TODO: this is a linear search, maybe use a dictionary instead
         for edge in self.edges:
@@ -241,7 +239,7 @@ class Graph:
 
 class GraphReader:
     """
-    Class for loading and reading the file containing the graph data
+    Class for loading and reading the file containing the graph data.
     """
     def __init__(self, path: str) -> None:
         self.path = path
@@ -279,7 +277,7 @@ class GraphReader:
     @property
     def nodes(self) -> list[Node]:
         """
-        Returns the list of Node objects of the graph
+        Returns the list of Node objects of the graph.
         """
         return list(self.nodes_dict().values())
 
@@ -338,30 +336,20 @@ class GraphWriter:
         Writes the graph information to the text file.
         """
         # write graph information
-        self.text += f"{self.graph.node_count}"
-        if self.lang == "ger":
-            self.text += "   # Knoten\n"
-        elif self.lang == "eng":
-            self.text += "   # nodes\n"
-        self.text += f"{self.graph.edge_count}"
-        if self.lang == "ger":
-            self.text += "   # Kanten\n"
-        elif self.lang == "eng":
-            self.text += "   # edges\n"
-        if self.graph.directed:
-            if self.lang == "ger":
-                self.text += "gerichtet\n"
-            elif self.lang == "eng":
-                self.text += "directed\n"
-            else:
-                raise ValueError(f"Language {self.lang} not supported")
-        else:
-            if self.lang == "ger":
-                self.text += "ungerichtet\n"
-            elif self.lang == "eng":
-                self.text += "undirected\n"
-            else:
-                raise ValueError(f"Language {self.lang} not supported")
+        vocab = {
+            'ger': ('Knoten', 'Kanten', 'gerichtet', 'ungerichtet'),
+            'eng': ('nodes', 'edges', 'directed', 'undirected')
+        }
+        for language in list(vocab.keys()):
+            if self.lang == language:
+                self.text += f"{self.graph.node_count}   # {vocab[language][0]}\n"
+                self.text += f"{self.graph.edge_count}   # {vocab[language][1]}\n"
+                if self.graph.directed:
+                    self.text += f"{vocab[language][2]}\n"
+                else:
+                    self.text += "{vocab[language][3]}\n"
+                break
+            raise ValueError(f"Language {self.lang} not supported")
 
     def write_nodes(self) -> None:
         """
