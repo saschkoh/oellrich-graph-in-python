@@ -35,8 +35,13 @@ class Node:
         self.y_coord = y_coord
         self.index = index
         self.weight = weight
-        self.f_neighbors = []
-        self.b_neighbors = []
+        self.f_neighbors = set()
+        self.b_neighbors = set()
+
+    @property
+    def allowed(self) -> bool:
+        """ returns whether the node got deleted or not """
+        return self.name is not None
 
     def load_from_string(self, string: str, index: int) -> None:
         """
@@ -64,10 +69,16 @@ class Node:
             self.y_coord = float(components[2])
         self.index = index
 
-    @property
-    def allowed(self) -> bool:
-        """ returns whether the node got deleted or not """
-        return self.name != ""
+    def clear(self) -> None:
+        """
+        Clears the node attributes except for the index.
+        """
+        self.name = None
+        self.x_coord = None
+        self.y_coord = None
+        self.weight = None
+        self.f_neighbors = set()
+        self.b_neighbors = set()
 
     def __str__(self) -> str:
         """
@@ -86,6 +97,23 @@ class Node:
         if self.weight is not None:
             out_string += f", weight: {self.weight}"
         return out_string
+
+    def __eq__(self, __value: object) -> bool:
+        """
+        Two nodes are equal if all their attributes are equal.
+        """
+        if isinstance(__value, Node):
+            if all([
+                self.name == __value.name,
+                self.x_coord == __value.x_coord,
+                self.y_coord == __value.y_coord,
+                self.index == __value.index,
+                self.weight == __value.weight
+            ]):
+                return True
+        else:
+            raise TypeError("Can only compare two Node objects!")
+        return False
 
 
 class Edge:
@@ -108,6 +136,13 @@ class Edge:
         self.tail = tail
         self.index = index
         self.weight = weight
+
+    @property
+    def allowed(self) -> bool:
+        """
+        returns whether the edge got deleted or not
+        """
+        return self.name is not None
 
     def load_from_string(self, string: str, nodes_dict: dict[str, Node], index: int) -> None:
         """
@@ -137,12 +172,14 @@ class Edge:
         self.tail = nodes_dict[components[2]]
         self.index = index
 
-    @property
-    def allowed(self) -> bool:
+    def clear(self) -> None:
         """
-        returns whether the edge got deleted or not
+        Clears the edge attributes except for the index.
         """
-        return self.name != ""
+        self.name = None
+        self.head = None
+        self.tail = None
+        self.weight = None
 
     def __str__(self) -> str:
         """
@@ -152,14 +189,31 @@ class Edge:
         if self.name is not None:
             out_string += f", name: {self.name}"
         if self.head is not None:
-            out_string += f", head: {self.head}"
+            out_string += f", head: {self.head.name}"
         if self.tail is not None:
-            out_string += f", tail: {self.tail}"
+            out_string += f", tail: {self.tail.name}"
         if self.index is not None:
             out_string += f", index: {self.index}"
         if self.weight is not None:
             out_string += f", weight: {self.weight}"
         return out_string
+
+    def __eq__(self, __value: object) -> bool:
+        """
+        Two edges are equal if all their attributes are equal.
+        """
+        if isinstance(__value, Edge):
+            if all([
+                self.name == __value.name,
+                self.head == __value.head,
+                self.tail == __value.tail,
+                self.index == __value.index,
+                self.weight == __value.weight
+            ]):
+                return True
+        else:
+            raise TypeError("Can only compare two Edge objects!")
+        return False
 
 
 class Graph:
@@ -178,8 +232,8 @@ class Graph:
         self.directed = directed
         self.nodes = nodes
         self.edges = edges
-        self.node_count = len(self.nodes)
-        self.edge_count = len(self.edges)
+        self.node_count = len(self.nodes) if self.nodes is not None else 0
+        self.edge_count = len(self.edges) if self.edges is not None else 0
 
     def node_by_name(self, name: str) -> Node:
         """
@@ -207,11 +261,12 @@ class Graph:
         in the corresponding lists of the nodes.
         """
         for edge in self.edges:
-            edge.head.f_neighbors.append(edge.tail)
-            if self.directed:
-                edge.tail.b_neighbors.append(edge.head)
+            edge.head.f_neighbors.add(edge.tail)
+            edge.tail.b_neighbors.add(edge.head)
         if not self.directed:
             for node in self.nodes:
+                # combine forward and backward neighbors
+                node.f_neighbors.update(node.b_neighbors)
                 node.b_neighbors = node.f_neighbors
 
     def auto_name(self) -> None:
@@ -274,9 +329,10 @@ class GraphReader:
         needed to look up the nodes by their names.
         """
         edges = []
-        for i, edge in enumerate(self.edges_raw):
+        for i, edge_raw in enumerate(self.edges_raw):
             edge = Edge()
-            edges.append(edge.load_from_string(edge, self.nodes_dict(), i))
+            edge.load_from_string(edge_raw, self.nodes_dict(), i)
+            edges.append(edge)
         return edges
 
     def read(self) -> Graph:
@@ -297,7 +353,7 @@ class GraphReader:
         self.nodes_raw = lines[:self.node_count]
         self.edges_raw = lines[self.node_count:self.node_count + self.edge_count]
         # create graph
-        return Graph(self.directed, self.nodes, self.edges)
+        return Graph(directed=self.directed, nodes=self.nodes, edges=self.edges)
 
 
 class GraphWriter:
@@ -369,6 +425,7 @@ class GraphWriter:
         # write edges
         for edge in self.graph.edges:
             self.text += f"{edge.name} {edge.head.name} {edge.tail.name}\n"
+        self.write_blank_line()
 
     def save(self) -> None:
         """
