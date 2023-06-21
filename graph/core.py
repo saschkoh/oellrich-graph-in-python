@@ -1,3 +1,4 @@
+# pylint: disable=too-many-arguments
 """
 This module contains the core classes for the graph data structure. The
 classes can be used to construct a graph from a file or to construct a graph
@@ -9,6 +10,7 @@ from pathlib import Path
 # TODO
 # - fix comments
 # - add logging
+
 
 class Node:
     """
