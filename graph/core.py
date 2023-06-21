@@ -13,6 +13,7 @@ from functools import lru_cache
 # - add type hints
 # - add logging
 # - add tests
+# - modify GraphWriter class to sort nodes by index
 
 
 class Node:
@@ -53,13 +54,14 @@ class Node:
         # split the string into its components
         components = string.split(" ")
         # check if the string has the correct format
-        if len(components) != 3:
+        if len(components) not in [1, 3]:
             raise ValueError(
                 f"Node: load_from_string() string {string} has incorrect format!"
             )
         self.name = components[0]
-        self.x_coord = float(components[1])
-        self.y_coord = float(components[2])
+        if len(components) == 3:
+            self.x_coord = float(components[1])
+            self.y_coord = float(components[2])
         self.index = index
 
     @property
@@ -72,9 +74,17 @@ class Node:
         Prints and returns relevant information about the node. The x and y
         coordinates are not relevant for the graph structure.
         """
-        out_string = self.name
+        out_string = "Object type: Node"
+        if self.name is not None:
+            out_string += f", name: {self.name}"
+        if self.x_coord is not None:
+            out_string += f", x_coord: {self.x_coord}"
+        if self.y_coord is not None:
+            out_string += f", y_coord: {self.y_coord}"
+        if self.index is not None:
+            out_string += f", index: {self.index}"
         if self.weight is not None:
-            out_string += f" [{self.weight}]"
+            out_string += f", weight: {self.weight}"
         return out_string
 
 
@@ -138,9 +148,17 @@ class Edge:
         """
         prints and returns relevant information about the edge
         """
-        out_string = f"{self.name} ({self.head}, {self.tail})"
+        out_string = "Object type: Edge"
+        if self.name is not None:
+            out_string += f", name: {self.name}"
+        if self.head is not None:
+            out_string += f", head: {self.head}"
+        if self.tail is not None:
+            out_string += f", tail: {self.tail}"
+        if self.index is not None:
+            out_string += f", index: {self.index}"
         if self.weight is not None:
-            out_string += f" [{self.weight}]"
+            out_string += f", weight: {self.weight}"
         return out_string
 
 

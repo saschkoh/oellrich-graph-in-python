@@ -10,7 +10,7 @@ class TestGraph(TestCase):
         self.assertEqual(graph.edge_count, 0)
         self.assertEqual(graph.nodes, [])
         self.assertEqual(graph.edges, [])
-        
+
     def test_init_file(self):
         path = f"{Path.cwd()}/test/test-graphs/graph9.gra"
         graph = Graph(filename=path)
