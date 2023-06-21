@@ -9,6 +9,7 @@ from pathlib import Path
 # TODO
 # - fix comments
 # - add logging
+# - test new implementation of GraphWriter.write_graph_info
 
 
 class Node:
@@ -348,6 +349,7 @@ class GraphWriter:
                     self.text += f"{vocab[language][2]}\n"
                 else:
                     self.text += f"{vocab[language][3]}\n"
+                self.write_blank_line()
                 break
             raise ValueError(f"Language {self.lang} not supported")
 
@@ -355,7 +357,6 @@ class GraphWriter:
         """
         Writes the node information to the text file.
         """
-        self.write_blank_line()
         if self.lang == "ger":
             self.text += "# Knotenname xKoord yKoord\n"
         elif self.lang == "eng":
@@ -366,15 +367,15 @@ class GraphWriter:
         # write nodes
         for node in self.graph.nodes:
             # make integers of coordinates if they are integers
-            x = int(node.x_coord) if node.x_coord.is_integer() else node.x_coord
-            y = int(node.y_coord) if node.y_coord.is_integer() else node.y_coord
-            self.text += f"{node.name} {x} {y}\n"
+            x_coord = int(node.x_coord) if node.x_coord.is_integer() else node.x_coord
+            y_coord = int(node.y_coord) if node.y_coord.is_integer() else node.y_coord
+            self.text += f"{node.name} {x_coord} {y_coord}\n"
+        self.write_blank_line()
 
     def write_edges(self) -> None:
         """
         Writes the edge information to the text file.
         """
-        self.write_blank_line()
         if self.lang == "ger":
             self.text += "# Kantenname Knotenname1 Knotenname2\n"
         elif self.lang == "eng":
