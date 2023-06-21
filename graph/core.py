@@ -347,7 +347,7 @@ class GraphWriter:
                 if self.graph.directed:
                     self.text += f"{vocab[language][2]}\n"
                 else:
-                    self.text += "{vocab[language][3]}\n"
+                    self.text += f"{vocab[language][3]}\n"
                 break
             raise ValueError(f"Language {self.lang} not supported")
 
