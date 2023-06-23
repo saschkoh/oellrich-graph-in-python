@@ -7,10 +7,6 @@ manually.
 from functools import lru_cache
 from pathlib import Path
 
-# TODO
-# - fix comments
-# - add logging
-
 
 class Node:
     """
