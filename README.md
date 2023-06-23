@@ -4,5 +4,5 @@ This is a Python implementation of a generic graph class, derived from the C++ i
 ## Usage
 In order to use the graph class, you can either:
 * download the repository and import the graph class into your project
-* download the latest release from the [releases]() page and import the graph class into your project
+* download the latest release from the [releases](https://github.com/saschkoh/oellrich-graph-in-python/releases) page and import the graph class into your project
 * fork the repository and use it as a submodule in your project
