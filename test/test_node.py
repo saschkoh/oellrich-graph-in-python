@@ -1,9 +1,15 @@
+"""
+This module contains the unit tests for the Node class.
+"""
 from unittest import TestCase
 
 from graph.core import Node
 
 
 class TestNode(TestCase):
+    """
+    TestCase class for testing the Node class.
+    """
     def test_create_empty_node(self):
         node = Node()
         self.assertEqual(node.name, None)
