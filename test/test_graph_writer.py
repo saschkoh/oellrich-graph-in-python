@@ -4,7 +4,7 @@ This module contains the unit test(s) for the GraphWriter class.
 from unittest import TestCase
 from pathlib import Path
 
-from graph.core import GraphReader, GraphWriter
+from oellrich_graph.core import GraphReader, GraphWriter
 
 
 class TestGraphWriter(TestCase):
