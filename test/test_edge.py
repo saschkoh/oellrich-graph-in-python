@@ -3,7 +3,7 @@ This module contains the unit tests for the Edge class.
 """
 from unittest import TestCase
 
-from graph.core import Node, Edge
+from oellrich_graph.core import Node, Edge
 
 
 class TestEdge(TestCase):

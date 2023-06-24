@@ -3,7 +3,7 @@ This module contains the unit tests for the Node class.
 """
 from unittest import TestCase
 
-from graph.core import Node
+from oellrich_graph.core import Node
 
 
 class TestNode(TestCase):
