@@ -1,9 +1,15 @@
+"""
+This module contains the unit tests for the Graph class.
+"""
 from unittest import TestCase
 
 from oellrich_graph.core import Graph, Node, Edge
 
 
 class TestGraph(TestCase):
+    """
+    TestCase class for testing the Graph class.
+    """
     # define nodes and edges for testing
     node_a = Node("A", 0, 0, 0)
     node_b = Node("B", 1, 0, 1)

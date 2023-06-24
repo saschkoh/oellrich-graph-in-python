@@ -1,9 +1,15 @@
+"""
+This module contains the unit tests for the Edge class.
+"""
 from unittest import TestCase
 
 from oellrich_graph.core import Node, Edge
 
 
 class TestEdge(TestCase):
+    """
+    TestCase class for testing the Edge class.
+    """
     # define a global dict for nodes
     nodes = {
         "A": Node("A", 0, 0, 0),
