@@ -126,6 +126,7 @@ class TestGraph(TestCase):
             ],
         )
         graph.init_neighbors()
+        # test neighbor nodes
         self.assertEqual(len(graph.nodes[0].f_neighbors), 1)
         self.assertEqual(graph.nodes[0].f_neighbors, {self.node_b})
         self.assertEqual(len(graph.nodes[1].f_neighbors), 1)
@@ -138,6 +139,19 @@ class TestGraph(TestCase):
         self.assertEqual(graph.nodes[1].b_neighbors, {self.node_a})
         self.assertEqual(len(graph.nodes[2].b_neighbors), 1)
         self.assertEqual(graph.nodes[2].b_neighbors, {self.node_b})
+        # test_neighbor_edges
+        self.assertEqual(len(graph.nodes[0].f_edges), 1)
+        self.assertEqual(graph.nodes[0].f_edges, {self.edge_ab})
+        self.assertEqual(len(graph.nodes[1].f_edges), 1)
+        self.assertEqual(graph.nodes[1].f_edges, {self.edge_bc})
+        self.assertEqual(len(graph.nodes[2].f_edges), 0)
+        self.assertEqual(graph.nodes[2].f_edges, set())
+        self.assertEqual(len(graph.nodes[0].b_edges), 0)
+        self.assertEqual(graph.nodes[0].b_edges, set())
+        self.assertEqual(len(graph.nodes[1].b_edges), 1)
+        self.assertEqual(graph.nodes[1].b_edges, {self.edge_ab})
+        self.assertEqual(len(graph.nodes[2].b_edges), 1)
+        self.assertEqual(graph.nodes[2].b_edges, {self.edge_bc})
 
     def test_init_neighbors_undirected(self):
         graph = Graph(
@@ -153,6 +167,7 @@ class TestGraph(TestCase):
             ],
         )
         graph.init_neighbors()
+        # test neighbor nodes
         self.assertEqual(
             graph.nodes[0].f_neighbors,
             graph.nodes[0].b_neighbors
@@ -171,6 +186,24 @@ class TestGraph(TestCase):
             {self.node_a, self.node_c}
         )
         self.assertEqual(graph.nodes[2].b_neighbors, {self.node_b})
+        # test_neighbor_edges
+        self.assertEqual(
+            graph.nodes[0].f_edges,
+            graph.nodes[0].b_edges
+        )
+        self.assertEqual(
+            graph.nodes[1].f_edges,
+            graph.nodes[1].b_edges
+        )
+        self.assertEqual(
+            graph.nodes[2].f_edges,
+            graph.nodes[2].b_edges
+        )
+        self.assertEqual(graph.nodes[0].b_edges, {self.edge_ab})
+        self.assertEqual(
+            graph.nodes[1].b_edges,
+            {self.edge_ab, self.edge_bc}
+        )
 
     def test_auto_name(self):
         graph = Graph(
