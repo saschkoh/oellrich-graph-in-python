@@ -1,7 +1,7 @@
 from unittest import TestCase
 from pathlib import Path
 
-from graph.core import GraphReader, GraphWriter
+from oellrich_graph.core import GraphReader, GraphWriter
 
 class TestGraphWriter(TestCase):
     def test_read_and_write(self):

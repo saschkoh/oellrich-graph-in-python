@@ -1,7 +1,7 @@
 from unittest import TestCase
 from pathlib import Path
 
-from graph.core import Node, Edge, GraphReader
+from oellrich_graph.core import Node, Edge, GraphReader
 
 
 def compare_nodes(node1, node2):
