@@ -29,6 +29,8 @@ class Node:
         self.weight = weight
         self.f_neighbors = set()
         self.b_neighbors = set()
+        self.f_edges = set()
+        self.b_edges = set()
 
     @property
     def allowed(self) -> bool:
@@ -72,6 +74,8 @@ class Node:
         self.weight = None
         self.f_neighbors = set()
         self.b_neighbors = set()
+        self.f_edges = set()
+        self.b_edges = set()
 
     def __str__(self) -> str:
         """
@@ -182,7 +186,8 @@ class Graph:
         name: str = "",
         directed: bool = True,
         nodes: list[Node] = None,
-        edges: list[Edge] = None
+        edges: list[Edge] = None,
+        init_neighbors: bool = False,
     ):
         self.name = name
         self.directed = directed
@@ -190,6 +195,8 @@ class Graph:
         self.edges = edges
         self.node_count = len(self.nodes) if self.nodes is not None else 0
         self.edge_count = len(self.edges) if self.edges is not None else 0
+        if init_neighbors:
+            self.init_neighbors()
 
     def node_by_name(self, name: str) -> Node:
         """
@@ -217,13 +224,20 @@ class Graph:
         lists of the nodes.
         """
         for edge in self.edges:
+            # add forward and backward neighbor nodes
             edge.head.f_neighbors.add(edge.tail)
             edge.tail.b_neighbors.add(edge.head)
+            # add forward and backward edges
+            edge.head.f_edges.add(edge)
+            edge.tail.b_edges.add(edge)
         if not self.directed:
             for node in self.nodes:
-                # combine forward and backward neighbors
+                # combine forward and backward neighbor nodes
                 node.f_neighbors.update(node.b_neighbors)
                 node.b_neighbors = node.f_neighbors
+                # combine forward and backward edges
+                node.f_edges.update(node.b_edges)
+                node.b_edges = node.f_edges
 
     def auto_name(self) -> None:
         """
@@ -238,13 +252,14 @@ class GraphReader:
     """
     Class for loading and reading the file containing the graph data.
     """
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: str, init_neighbors: bool = False) -> None:
         self.path = path
         self.node_count = None
         self.edge_count = None
         self.directed_raw = None
         self.nodes_raw = None
         self.edges_raw = None
+        self.init_neighbors = init_neighbors
 
     @property
     def directed(self) -> bool:
@@ -309,7 +324,12 @@ class GraphReader:
         self.nodes_raw = lines[:self.node_count]
         self.edges_raw = lines[self.node_count:self.node_count + self.edge_count]
         # create graph
-        return Graph(directed=self.directed, nodes=self.nodes, edges=self.edges)
+        return Graph(
+            directed=self.directed,
+            nodes=self.nodes,
+            edges=self.edges,
+            init_neighbors=self.init_neighbors
+        )
 
 
 class GraphWriter:
