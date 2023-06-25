@@ -77,7 +77,7 @@ class TestGraphReader(TestCase):
     edge_fi = Edge("FI", node_f, node_i, 7)
     edge_hi = Edge("HI", node_h, node_i, 8)
 
-    def test_with_file(self):
+    def test_with_file_0(self):
         """
         Tests if the GraphReader class extract the graph from a file successfully.
         """
@@ -116,3 +116,17 @@ class TestGraphReader(TestCase):
         ))
         self.assertEqual(graph.node_count, 9)
         self.assertEqual(graph.edge_count, 9)
+        
+    def test_with_file_1(self):
+        path = f"{Path.cwd()}/test/test-graphs/test10.gra"
+        graph = GraphReader(path).read()
+        # test edge without comment
+        self.assertEqual(graph.edges[0].name, "FB")
+        self.assertEqual(graph.edges[0].head, graph.nodes[5])
+        self.assertEqual(graph.edges[0].tail, graph.nodes[1])
+        self.assertEqual(graph.edges[0].weight, 3)
+        # test edge with comment
+        self.assertEqual(graph.edges[2].name, "FG")
+        self.assertEqual(graph.edges[2].head, graph.nodes[5])
+        self.assertEqual(graph.edges[2].tail, graph.nodes[6])
+        self.assertEqual(graph.edges[2].weight, 1.41)

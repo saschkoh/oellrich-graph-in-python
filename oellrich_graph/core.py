@@ -138,7 +138,11 @@ class Edge:
         # split the string into its components
         components = string.split(" ")
         # check if the string has the correct format
-        if len(components) != 3:
+        if len(components) > 4 and not components[4].startswith("#"):
+            raise Warning(
+                f"Edge {' '.join(components)} has additional parameters that are not yet supported!"
+            )
+        if len(components) < 3:
             raise ValueError(
                 f"Edge: load_from_string() string {string} has incorrect format!"
             )
@@ -147,6 +151,9 @@ class Edge:
         # set head and tail nodes and index via look up in the nodes dictionary
         self.head = nodes_dict[components[1]]
         self.tail = nodes_dict[components[2]]
+        # set the weight if it is given
+        if len(components) == 4:
+            self.weight = float(components[3])
         self.index = index
 
     def clear(self) -> None:

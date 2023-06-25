@@ -48,8 +48,8 @@ class TestEdge(TestCase):
 
     def test_load_from_invalid_string_2(self):
         edge = Edge()
-        with self.assertRaisesRegex(ValueError, "incorrect format"):
-            edge.load_from_string("AB A B C", self.nodes, 0)
+        with self.assertRaisesRegex(Warning, "additional parameters"):
+            edge.load_from_string("AB A B C D", self.nodes, 0)
 
     def test_allowed(self):
         edge = Edge()

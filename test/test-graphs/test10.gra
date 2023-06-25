@@ -1,0 +1,53 @@
+# Kleiner Graph zum Testen des Dijkstra-Algorithmus
+
+10   # Knoten
+32   # Kanten
+gerichtet
+
+# Knoten xKoord yKoord
+
+A 1 2
+B 4 4
+C 4 0
+D 3 1
+E 2 0
+F 0 4
+G 1 3
+H 0 2
+I 2 3
+J 1 0
+
+# Kante Fußknoten Kopfknoten  eukl. Abstand
+
+FB F B 3
+FH F H 2
+FG F G 1.41   # sqrt(2)
+FI F I 2.24   # sqrt(5)
+BI B I 2.24
+BD B D 3.16   # sqrt(10)
+DB D B 3.16
+BC B C 4
+CB C B 4
+GI G I 1
+IG I G 1
+GH G H 1.41
+HG H G 1.41
+GA G A 1
+AI A I 1.41
+IA I A 1.41
+ID I D 2.24
+HA H A 1
+HJ H J 2.24
+JH J H 2.24
+AJ A J 2
+AE A E 2.24
+EA E A 2.24
+AD A D 2.24
+DA D A 2.24
+DE D E 1.41
+ED E D 1.41
+DC D C 1.41
+JE J E 1
+EJ E J 1
+EC E C 2
+CE C E 2
