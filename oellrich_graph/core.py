@@ -140,7 +140,7 @@ class Edge:
         # check if the string has the correct format
         if len(components) > 4 and not components[4].startswith("#"):
             raise Warning(
-                f"Edge {''.join(components)} has additional parameters that are not yet supported!"
+                f"Edge {' '.join(components)} has additional parameters that are not yet supported!"
             )
         if len(components) < 3:
             raise ValueError(
