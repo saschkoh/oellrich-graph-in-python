@@ -13,9 +13,9 @@ pip install git+https://github.com/saschkoh/oellrich-graph-in-python
 ```
 and import the graph class into your project using one of the following commands:
 ```python
-import oellrich_graph_in_python
-from oellrich_graph_in_python import Graph, GraphReader
-from oellrich_graph_in_python import *
+import oellrich_graph
+from oellrich_graph import Graph, GraphReader
+from oellrich_graph import *
 ```
 ### Option 2
 Download the latest release from the [releases](https://github.com/saschkoh/oellrich-graph-in-python/releases) page and import the graph class into your project by copying the graph folder
