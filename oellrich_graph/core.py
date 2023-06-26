@@ -52,7 +52,7 @@ class Node:
                     f"Node: load_from_string() parameter {param} is already set!"
                 )
         # split the string into its components
-        components = string.split(" ")
+        components = string.split()
         # check if the string has the correct format
         if len(components) not in [1, 3]:
             raise ValueError(
