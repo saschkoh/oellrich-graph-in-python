@@ -186,24 +186,13 @@ class TestGraph(TestCase):
             {self.node_a, self.node_c}
         )
         self.assertEqual(graph.nodes[2].b_neighbors, {self.node_b})
-        # test_neighbor_edges
-        self.assertEqual(
-            graph.nodes[0].f_edges,
-            graph.nodes[0].b_edges
-        )
-        self.assertEqual(
-            graph.nodes[1].f_edges,
-            graph.nodes[1].b_edges
-        )
-        self.assertEqual(
-            graph.nodes[2].f_edges,
-            graph.nodes[2].b_edges
-        )
-        self.assertEqual(graph.nodes[0].b_edges, {self.edge_ab})
-        self.assertEqual(
-            graph.nodes[1].b_edges,
-            {self.edge_ab, self.edge_bc}
-        )
+        # test neighbor edges
+        self.assertEqual(graph.nodes[0].f_edges, {self.edge_ab})
+        self.assertEqual([edge.name for edge in graph.nodes[0].b_edges], ["AB_reversed"])
+        self.assertEqual(set([edge.name for edge in graph.nodes[1].b_edges]), {"AB", "BC_reversed"})
+        self.assertEqual(set([edge.name for edge in graph.nodes[1].f_edges]), {"AB_reversed", "BC"})
+        self.assertEqual([edge.name for edge in graph.nodes[2].f_edges], ["BC_reversed"])
+        self.assertEqual(graph.nodes[2].b_edges, {self.edge_bc})
 
     def test_auto_name(self):
         graph = Graph(
