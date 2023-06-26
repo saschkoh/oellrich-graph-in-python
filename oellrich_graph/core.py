@@ -136,7 +136,7 @@ class Edge:
                     f"Edge: load_from_string() parameter {param} is already set!"
                 )
         # split the string into its components
-        components = string.split(" ")
+        components = string.split()
         # check if the string has the correct format
         if len(components) > 4 and not components[4].startswith("#"):
             raise Warning(
