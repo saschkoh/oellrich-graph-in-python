@@ -255,8 +255,8 @@ class Graph:
             # add forward and backward edges
             edge.head.f_edges.add(edge)
             edge.tail.b_edges.add(edge)
-            # add the edges to the graph
-            self.edges += new_edges
+            # add the new edges to the graph
+            self.edges.extend(new_edges)
 
         # if not self.directed:
         #     for node in self.nodes:
