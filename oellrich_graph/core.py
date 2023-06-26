@@ -258,15 +258,6 @@ class Graph:
         # add the new edges to the graph
         self.edges.extend(reversed_edges)
 
-        # if not self.directed:
-        #     for node in self.nodes:
-        #         # combine forward and backward neighbor nodes
-        #         node.f_neighbors.update(node.b_neighbors)
-        #         node.b_neighbors = node.f_neighbors
-        #         # combine forward and backward edges
-        #         node.f_edges.update(node.b_edges)
-        #         node.b_edges = node.f_edges
-
     def auto_name(self) -> None:
         """
         Creates a name for the graph based on the names of the nodes and edges.
