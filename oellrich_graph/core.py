@@ -230,7 +230,7 @@ class Graph:
         Searches the edges for forward and backward neighbors and stores them in the corresponding
         lists of the nodes.
         """
-        new_edges = []
+        reversed_edges = []
         for edge in self.edges:
             # add forward and backward neighbor nodes
             edge.head.f_neighbors.add(edge.tail)
@@ -248,15 +248,15 @@ class Graph:
                     weight=edge.weight,
                 )
                 # add the new edge to the graph
-                new_edges.append(new_edge)
+                reversed_edges.append(new_edge)
                 # add the new edge to the node
                 edge.tail.f_edges.add(new_edge)
                 edge.head.b_edges.add(new_edge)
             # add forward and backward edges
             edge.head.f_edges.add(edge)
             edge.tail.b_edges.add(edge)
-            # add the new edges to the graph
-            self.edges.extend(new_edges)
+        # add the new edges to the graph
+        self.edges.extend(reversed_edges)
 
         # if not self.directed:
         #     for node in self.nodes:
