@@ -230,21 +230,33 @@ class Graph:
         Searches the edges for forward and backward neighbors and stores them in the corresponding
         lists of the nodes.
         """
+        reversed_edges = []
         for edge in self.edges:
             # add forward and backward neighbor nodes
             edge.head.f_neighbors.add(edge.tail)
             edge.tail.b_neighbors.add(edge.head)
+            if not self.directed:
+                # add forward and backward neighbor nodes
+                edge.head.b_neighbors.add(edge.tail)
+                edge.tail.f_neighbors.add(edge.head)
+                # create a new edge with reversed direction
+                new_edge = Edge(
+                    name=f"{edge.name}_reversed",
+                    head=edge.tail,
+                    tail=edge.head,
+                    index=edge.index,
+                    weight=edge.weight,
+                )
+                # add the new edge to the graph
+                reversed_edges.append(new_edge)
+                # add the new edge to the node
+                edge.tail.f_edges.add(new_edge)
+                edge.head.b_edges.add(new_edge)
             # add forward and backward edges
             edge.head.f_edges.add(edge)
             edge.tail.b_edges.add(edge)
-        if not self.directed:
-            for node in self.nodes:
-                # combine forward and backward neighbor nodes
-                node.f_neighbors.update(node.b_neighbors)
-                node.b_neighbors = node.f_neighbors
-                # combine forward and backward edges
-                node.f_edges.update(node.b_edges)
-                node.b_edges = node.f_edges
+        # add the new edges to the graph
+        self.edges.extend(reversed_edges)
 
     def auto_name(self) -> None:
         """
@@ -408,15 +420,25 @@ class GraphWriter:
         Writes the edge information to the text file.
         """
         if self.lang == "ger":
-            self.text += "# Kantenname Knotenname1 Knotenname2\n"
+            if any(edge.weight is not None for edge in self.graph.edges):
+                self.text += "# Kantenname Knotenname1 Knotenname2 Kantengewicht\n"
+            else:
+                self.text += "# Kantenname Knotenname1 Knotenname2\n"
         elif self.lang == "eng":
-            self.text += "# EdgeName NodeName1 NodeName2\n"
+            if any(edge.weight is not None for edge in self.graph.edges):
+                self.text += "# EdgeName NodeName1 NodeName2 EdgeWeight\n"
+            else:
+                self.text += "# EdgeName NodeName1 NodeName2\n"
         else:
             raise ValueError(f"Language {self.lang} not supported")
         self.write_blank_line()
         # write edges
         for edge in self.graph.edges:
-            self.text += f"{edge.name} {edge.head.name} {edge.tail.name}\n"
+            if "_reversed" not in edge.name:
+                if edge.weight is not None:
+                    self.text += f"{edge.name} {edge.head.name} {edge.tail.name} {edge.weight}\n"
+                else:
+                    self.text += f"{edge.name} {edge.head.name} {edge.tail.name}\n"
 
     def save(self) -> None:
         """
