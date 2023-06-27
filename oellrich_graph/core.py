@@ -235,6 +235,9 @@ class Graph:
             # add forward and backward neighbor nodes
             edge.head.f_neighbors.add(edge.tail)
             edge.tail.b_neighbors.add(edge.head)
+            # add forward and backward edges
+            edge.head.f_edges.add(edge)
+            edge.tail.b_edges.add(edge)
             if not self.directed:
                 # add forward and backward neighbor nodes
                 edge.head.b_neighbors.add(edge.tail)
@@ -252,10 +255,7 @@ class Graph:
                 # add the new edge to the node
                 edge.tail.f_edges.add(new_edge)
                 edge.head.b_edges.add(new_edge)
-            # add forward and backward edges
-            edge.head.f_edges.add(edge)
-            edge.tail.b_edges.add(edge)
-        # add the new edges to the graph
+        # add the reversed edges to the graph
         self.edges.extend(reversed_edges)
 
     def auto_name(self) -> None:
